@@ -38,7 +38,15 @@ locations and sizes.
 }
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/fncokg/insetplot}
+  \item Report bugs at \url{https://github.com/fncokg/insetplot/issues}
+}
+
+}
 \author{
-\strong{Maintainer}: Chao Kong \email{kongchao1998@gmail.com}
+\strong{Maintainer}: Chao Kong \email{kongchao1998@gmail.com} (\href{https://orcid.org/0000-0002-6404-6142}{ORCID}) [copyright holder]
 
 }
