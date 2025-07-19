@@ -2,7 +2,7 @@ Package: insetplot
 Title: Inset Plots for Spatial Data Visualization
 Version: 1.0.0
 Authors@R: 
-    person("Chao", "Kong", , "kongchao1998@gmail.com", role = c("aut", "cre"))
+    person("Chao", "Kong", , "kongchao1998@gmail.com", role = c("aut", "cre","cph"),comment = c(ORCID = "0000-0002-6404-6142"))
 Description: Create inset plots for spatial data visualization with minimal modifications to existing ggplot2 code. You provide the extent and size of the inset, simply wrap your existing plotting code and it will handle the rest: data cropping, aspect ratio handling, and layout management.
 License: MIT
 Encoding: UTF-8
