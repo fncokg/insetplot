@@ -73,7 +73,6 @@
 #' using the names specified when configuring the inset map.
 #'
 #' @examples
-#' \dontrun{
 #' library(sf)
 #' library(ggplot2)
 #'
@@ -99,7 +98,6 @@
 #'         geom_sf(aes(fill = AREA)) +
 #'         theme_void()
 #' })
-#' }
 #'
 #' @seealso [config_insetmap()], [plot_spec()], [last_insetcfg()]
 #' @export

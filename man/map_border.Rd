@@ -23,12 +23,10 @@ Creates a theme element that adds a border around a map plot. Useful for
 distinguishing inset plots from the main plot.
 }
 \examples{
-\dontrun{
 library(ggplot2)
 
 ggplot(mtcars, aes(mpg, wt)) +
     geom_point() +
     map_border(color = "red", linewidth = 2)
-}
 
 }

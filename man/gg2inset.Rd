@@ -45,7 +45,6 @@ A wrapper of \code{\link[cowplot:draw_plot]{cowplot::draw_plot()}} handling appr
 The function is only recommended for advanced users who need to create custom insets. For most use cases, it is better to use \code{\link[=with_inset]{with_inset()}} which handles the inset creation automatically.
 }
 \examples{
-\dontrun{
 library(ggplot2)
 library(cowplot)
 
@@ -65,6 +64,5 @@ inset <- gg2inset(inset_plot, sf::st_crs(4326),
 
 # Combine plots
 ggdraw(main_plot) + inset
-}
 
 }

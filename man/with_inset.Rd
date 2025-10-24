@@ -54,7 +54,6 @@ in \code{\link[=config_insetmap]{config_insetmap()}}. Therefore, plots displayed
 may not accurately reflect the final output.
 }
 \examples{
-\dontrun{
 library(sf)
 library(ggplot2)
 
@@ -80,7 +79,6 @@ with_inset({
         geom_sf(aes(fill = AREA)) +
         theme_void()
 })
-}
 
 }
 \seealso{

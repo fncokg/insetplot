@@ -15,12 +15,10 @@ Retrieves the most recently stored inset configuration object.
 This is used internally by \code{\link[=with_inset]{with_inset()}} when no configuration is explicitly provided.
 }
 \examples{
-\dontrun{
 # After setting up a configuration
 config_insetmap(some_data, specs = some_specs)
 
 # Retrieve the configuration
 cfg <- last_insetcfg()
-}
 
 }

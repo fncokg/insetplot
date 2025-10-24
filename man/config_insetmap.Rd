@@ -39,7 +39,6 @@ specifications. This function stores the configuration globally for use
 with \code{\link[=with_inset]{with_inset()}}.
 }
 \examples{
-\dontrun{
 library(sf)
 
 # Load some spatial data
@@ -57,7 +56,6 @@ config_insetmap(
         )
     )
 )
-}
 
 }
 \seealso{

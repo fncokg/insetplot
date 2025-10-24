@@ -98,7 +98,6 @@ plot_spec <- function(
 #'   The configuration is also stored globally for use with [with_inset()].
 #'
 #' @examples
-#' \dontrun{
 #' library(sf)
 #'
 #' # Load some spatial data
@@ -116,7 +115,6 @@ plot_spec <- function(
 #'         )
 #'     )
 #' )
-#' }
 #'
 #' @seealso [plot_spec()], [with_inset()], [last_insetcfg()]
 #' @export
@@ -208,13 +206,26 @@ set_last_insetcfg <- function(insetcfg) .cfg_store$set(insetcfg)
 #'   configuration has been set.
 #'
 #' @examples
-#' \dontrun{
-#' # After setting up a configuration
-#' config_insetmap(some_data, specs = some_specs)
+#' library(sf)
+#'
+#' # Load some spatial data
+#' world_data <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
+#'
+#' # Configure inset map
+#' config_insetmap(
+#'     plot_data = world_data,
+#'     specs = list(
+#'         plot_spec(main = TRUE),
+#'         plot_spec(
+#'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+#'             loc_left = 0.02, loc_bottom = 0.7,
+#'             width = 0.3
+#'         )
+#'     )
+#' )
 #'
 #' # Retrieve the configuration
 #' cfg <- last_insetcfg()
-#' }
 #'
 #' @export
 last_insetcfg <- function() .cfg_store$get()

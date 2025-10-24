@@ -62,7 +62,6 @@ get_map_aspect_ratio <- function(map, crs) {
 #' @return A cowplot inset object that can be added to a ggplot.
 #'
 #' @examples
-#' \dontrun{
 #' library(ggplot2)
 #' library(cowplot)
 #'
@@ -82,7 +81,6 @@ get_map_aspect_ratio <- function(map, crs) {
 #'
 #' # Combine plots
 #' ggdraw(main_plot) + inset
-#' }
 #'
 #' @export
 gg2inset <- function(inset_map, crs, x, y, inset_width = NULL, inset_height = NULL, inset_aspect_ratio = NULL, full_aspect_ratio = 1.0, ...) {
@@ -123,13 +121,11 @@ gg2inset <- function(inset_map, crs, x, y, inset_width = NULL, inset_height = NU
 #' @return A ggplot2 theme object that can be added to a plot.
 #'
 #' @examples
-#' \dontrun{
 #' library(ggplot2)
 #'
 #' ggplot(mtcars, aes(mpg, wt)) +
 #'     geom_point() +
 #'     map_border(color = "red", linewidth = 2)
-#' }
 #'
 #' @export
 map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
