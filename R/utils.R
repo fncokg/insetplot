@@ -1,15 +1,21 @@
-#' Get Map Range and Aspect Ratio
+#' Get map ranges and aspect ratio
 #'
-#' Calculates the coordinate ranges and aspect ratio of a ggplot map object,
-#' taking into account the coordinate reference system.
+#' Inspect a ggplot built with spatial coordinates and return the x/y ranges
+#' and the effective aspect ratio. If the target CRS is geographic
+#' (longitude/latitude), the ratio is adjusted by cos(mean(latitude)).
 #'
-#' @param map A ggplot object containing a map.
-#' @param crs A coordinate reference system specification.
+#' Note: This inspects the plot scales via ggplot2 internals (layer scales),
+#' so the plot should include coordinate limits (e.g., coord_sf with xlim/ylim)
+#' to be meaningful.
+#'
+#' @param map A ggplot object (typically using coord_sf).
+#' @param crs A coordinate reference system (CRS) used to determine whether the
+#'   plot is in long/lat. Passed to sf::st_is_longlat().
 #'
 #' @return A list with components:
-#'   \item{xrange}{The range of x-coordinates}
-#'   \item{yrange}{The range of y-coordinates}
-#'   \item{aspect_ratio}{The aspect ratio of the map}
+#'   \item{xrange}{Numeric length of x extent}
+#'   \item{yrange}{Numeric length of y extent}
+#'   \item{aspect_ratio}{Numeric width-to-height ratio after CRS adjustment}
 #'
 #' @keywords internal
 get_map_range <- function(map, crs) {
@@ -28,38 +34,43 @@ get_map_range <- function(map, crs) {
     return(list(xrange = xrange, yrange = yrange, aspect_ratio = aspect.ratio))
 }
 
-#' Get Map Aspect Ratio
+#' Get map aspect ratio
 #'
-#' A convenience function that returns only the aspect ratio of a map.
+#' Convenience wrapper around [get_map_range()] returning only the numeric
+#' aspect ratio.
 #'
-#' @param map A ggplot object containing a map.
-#' @param crs A coordinate reference system specification.
+#' @param map A ggplot object.
+#' @param crs A coordinate reference system (CRS).
 #'
-#' @return Numeric value representing the aspect ratio.
+#' @return A single numeric aspect ratio (width/height).
 #' @keywords internal
 get_map_aspect_ratio <- function(map, crs) {
     return(get_map_range(map, crs)$aspect_ratio)
 }
 
-#' Convert ggplot to Inset Plot
+#' Convert a ggplot to an inset layer
 #'
-#' A wrapper of [cowplot::draw_plot()] handling appropriate scaling and positioning based on the fixed aspect ratio of the inset.
+#' Helper around [cowplot::draw_plot()] that computes missing width/height from
+#' the inset's aspect ratio and the full canvas aspect ratio.
 #'
-#' The function is only recommended for advanced users who need to create custom insets. For most use cases, it is better to use [with_inset()] which handles the inset creation automatically.
+#' - If both `inset_width` and `inset_height` are NULL, `inset_height` defaults
+#'   to 0.2 (with a warning) and width is derived from aspect ratios.
+#' - If only one of width/height is provided, the other is derived to preserve
+#'   the inset aspect ratio on the full canvas.
 #'
-#' @param inset_map A ggplot object to be used as an inset.
-#' @param crs A coordinate reference system specification.
-#' @param x,y Numeric values between 0 and 1 specifying the position of the
-#'   bottom-left corner of the inset within the main plot.
-#' @param inset_width,inset_height Numeric values specifying the width and
-#'   height of the inset as proportions of the main plot.
-#' @param inset_aspect_ratio Numeric value specifying the aspect ratio of the
-#'   inset. If NULL, calculated automatically from the inset_map.
-#' @param full_aspect_ratio Numeric value specifying the aspect ratio of the
-#'   full plot area. Default is 1.0.
-#' @param ... Additional arguments passed to [cowplot::draw_plot()].
+#' For most users, prefer [with_inset()] which orchestrates this automatically.
 #'
-#' @return A cowplot inset object that can be added to a ggplot.
+#' @param inset_map A ggplot object to be used as the inset.
+#' @param crs A CRS used to compute the inset's aspect ratio when needed.
+#' @param x,y Numbers in \[0, 1\] for the bottom-left location on the canvas.
+#' @param inset_width,inset_height Size of the inset as a fraction of the full
+#'   canvas width/height. May be NULL to auto-derive.
+#' @param inset_aspect_ratio Optional numeric aspect ratio of the inset itself.
+#'   When NULL, it is computed from `inset_map` and `crs`.
+#' @param full_aspect_ratio Width-to-height ratio of the full canvas (default 1).
+#' @param ... Passed to [cowplot::draw_plot()].
+#'
+#' @return A cowplot layer that can be added to `ggdraw()`.
 #'
 #' @examples
 #' library(ggplot2)
@@ -108,17 +119,17 @@ gg2inset <- function(inset_map, crs, x, y, inset_width = NULL, inset_height = NU
     )
 }
 
-#' Add Border to Map Plot
+#' Add a border around a map plot
 #'
-#' Creates a theme element that adds a border around a map plot. Useful for
-#' distinguishing inset plots from the main plot.
+#' Returns a small theme that draws a rectangular border around the plot area.
+#' Handy for visually separating inset plots from the main plot.
 #'
-#' @param color Character string specifying the border color. Default is "black".
-#' @param linewidth Numeric value specifying the border line width. Default is 1.
-#' @param fill Character string specifying the background fill color. Default is "white".
-#' @param ... Additional arguments passed to [ggplot2::element_rect()].
+#' @param color Border color. Default "black".
+#' @param linewidth Border line width. Default 1.
+#' @param fill Background fill color. Default "white".
+#' @param ... Passed to [ggplot2::element_rect()].
 #'
-#' @return A ggplot2 theme object that can be added to a plot.
+#' @return A ggplot2 theme to add with `+`.
 #'
 #' @examples
 #' library(ggplot2)

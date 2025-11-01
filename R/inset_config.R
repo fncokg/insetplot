@@ -1,21 +1,26 @@
-#' Create Plot Specification for Inset Maps
+#' Create a plot specification for insets
 #'
-#' Defines the spatial extent and positioning parameters for individual plots
-#' in an inset map configuration.
+#' Define the spatial extent and positioning for each subplot (main or inset).
 #'
-#' @param xmin,xmax,ymin,ymax Numeric values defining the bounding box coordinates
-#'   for cropping the spatial data. If NULL, the full extent will be used.
-#' @param loc_left,loc_bottom Numeric values between 0 and 1 specifying the
-#'   position of the inset plot within the main plot area. Default is (0, 0).
-#' @param width,height Numeric values specifying the width and height of the
-#'   inset plot as proportions of the main plot. If both are provided, a warning
-#'   is issued as aspect ratio maintenance is prioritized.
-#' @param no_scale Logical. If TRUE, the inset size is determined automatically
-#'   based on the spatial extent relative to the main plot. Default is FALSE.
-#' @param main Logical. If TRUE, this specification defines the main plot.
-#'   Only one specification should have main = TRUE. Default is FALSE.
+#' @param xmin,xmax,ymin,ymax Numeric bbox coordinates for the subplot. Any may
+#'   be NA and will be inferred from the overall extent if possible.
+#' @param loc A convenience string like "left bottom", "center top", or
+#'   "right center". When supplied, it overrides `loc_left`/`loc_bottom` with
+#'   predefined anchor positions close to the plot edges (with small margins).
+#' @param loc_left,loc_bottom Numbers in \[0, 1\] for the bottom-left position of
+#'   the inset on the full canvas. Ignored when `main = TRUE`.
+#' @param width,height Optional size of the inset as a fraction of canvas width/
+#'   height. Supplying both is allowed but not recommended; aspect ratio will be
+#'   prioritized. If both are NULL and `no_scale = FALSE`, `no_scale` is set to
+#'   TRUE with a warning.
+#' @param no_scale Logical. If TRUE, the inset's width/height are derived from
+#'   the spatial ranges relative to the main plot. See [with_inset()].
+#' @param main Logical. TRUE marks this spec as the main plot (exactly one).
+#' @param plot Optional ggplot object to use for this spec instead of the base
+#'   plot passed to [with_inset()].
 #'
-#' @return A list containing the plot specification parameters.
+#' @return A list with elements `bbox`, `loc_left`, `loc_bottom`, `width`,
+#'   `height`, `no_scale`, `main`, and `plot`.
 #'
 #' @examples
 #' # Create a main plot specification
@@ -30,15 +35,40 @@
 #'
 #' @export
 plot_spec <- function(
-    xmin = NULL, xmax = NULL, ymin = NULL, ymax = NULL,
-    loc_left = 0, loc_bottom = 0, width = NULL, height = NULL,
-    no_scale = FALSE, main = FALSE) {
+    xmin = NA, xmax = NA, ymin = NA, ymax = NA,
+    loc = "", loc_left = 0, loc_bottom = 0, width = NULL, height = NULL,
+    no_scale = FALSE, main = FALSE, plot = NULL) {
     # Input validation
-    if (!is.null(xmin) && !is.null(xmax) && xmin >= xmax) {
+    if (!is.na(xmin) && !is.na(xmax) && xmin >= xmax) {
         stop("xmin must be less than xmax")
     }
-    if (!is.null(ymin) && !is.null(ymax) && ymin >= ymax) {
+    if (!is.na(ymin) && !is.na(ymax) && ymin >= ymax) {
         stop("ymin must be less than ymax")
+    }
+    if (loc != "") {
+        # parse loc string
+        loc <- tolower(loc)
+        locs <- strsplit(loc, " ")[[1]]
+        horizontal_pos <- locs[1]
+        vertical_pos <- locs[2]
+        if (horizontal_pos == "left") {
+            loc_left <- 0.02
+        } else if (horizontal_pos == "center") {
+            loc_left <- 0.5
+        } else if (horizontal_pos == "right") {
+            loc_left <- 0.98
+        } else {
+            stop("Invalid horizontal position in loc. Use 'left', 'center', or 'right'.")
+        }
+        if (vertical_pos == "bottom") {
+            loc_bottom <- 0.02
+        } else if (vertical_pos == "center") {
+            loc_bottom <- 0.5
+        } else if (vertical_pos == "top") {
+            loc_bottom <- 0.98
+        } else {
+            stop("Invalid vertical position in loc. Use 'bottom', 'center', or 'top'.")
+        }
     }
     if (!main) {
         # Only check location and size if not the main plot
@@ -56,7 +86,7 @@ plot_spec <- function(
             warning("Providing both width and height is not recommended. We will prioritize maintaining aspect ratio.")
         }
         if (no_scale && (is.null(width) || is.null(height))) {
-            warning("If no_scale is TRUE, the width and height are directly determined by the main plot, and therefore the width and height will be ignored.")
+            cat("If no_scale is TRUE, the width and height are directly determined by the main plot, and therefore the width and height will be ignored.")
         }
         if (is.null(width) && is.null(height) && !no_scale) {
             no_scale <- TRUE
@@ -71,47 +101,46 @@ plot_spec <- function(
             width = width,
             height = height,
             no_scale = no_scale,
-            main = main
+            main = main,
+            plot = plot
         )
     )
 }
 
-#' Configure Inset Map Settings
+#' Configure inset map settings
 #'
-#' Sets up the configuration for creating inset maps with multiple plot
-#' specifications. This function stores the configuration globally for use
-#' with [with_inset()].
+#' Create and store an inset configuration used by [with_inset()]. The
+#' configuration contains subplot specifications, aspect ratio of the full
+#' canvas, CRS settings, and border appearance for insets.
 #'
-#' @param plot_data A spatial data object, or multiple spatial data objects
-#'   passed as arguments to `c()` (e.g., `c(data1, data2)`). These will be
-#'   available for plotting in the inset map expressions using their original
-#'   variable names. For a single dataset, can be passed directly without `c()`.
-#' @param specs A list of plot specifications created with [plot_spec()].
-#'   Each specification defines a subplot with its spatial extent and positioning.
-#' @param full_ratio Numeric. The WIDTH-TO-HEIGHT aspect ratio of the full plot area. NOTE: You should save the plot with a width-height ratio that matches this value. Otherwise, the inset plots may not be displayed correctly. Default is 1.0.
-#' @param crs A coordinate reference system specification. Default is
-#'   EPSG:4326 (WGS84 geographic coordinates).
-#' @param border_args A list of arguments passed to [map_border()] for styling
-#'   inset plot borders. Default creates a black border with linewidth 1.
+#' @param plot_data Reserved for future use; currently ignored. Kept for API
+#'   stability.
+#' @param specs A non-empty list of [plot_spec()] objects.
+#' @param full_ratio Numeric width-to-height ratio of the full canvas. For best
+#'   results, save figures with this ratio. Default 1.
+#' @param from_crs,to_crs Coordinate reference systems passed to
+#'   [ggplot2::coord_sf()] as `default_crs` and `crs` respectively. Defaults are
+#'   EPSG:4326 for both.
+#' @param border_args A list merged into defaults for [map_border()] arguments
+#'   (defaults: `color = "black"`, `linewidth = 1`).
 #'
-#' @return Invisibly returns the inset configuration object of class "insetcfg".
-#'   The configuration is also stored globally for use with [with_inset()].
+#' @return Invisibly, an object of class "insetcfg" with fields: `specs`,
+#'   `full_ratio`, `from_crs`, `to_crs`, and `border_args`. It is also stored as
+#'   the last configuration, retrievable via [last_insetcfg()].
 #'
 #' @examples
 #' library(sf)
 #'
-#' # Load some spatial data
-#' world_data <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
+#' g <- sf::st_sfc(sf::st_point(c(0, 0)), crs = 4326)
+#' d <- sf::st_sf(id = 1, geometry = g)
 #'
-#' # Configure inset map
 #' config_insetmap(
-#'     plot_data = world_data,
+#'     plot_data = d,
 #'     specs = list(
 #'         plot_spec(main = TRUE),
 #'         plot_spec(
-#'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc_left = 0.02, loc_bottom = 0.7,
-#'             width = 0.3
+#'             xmin = -1, xmax = 1, ymin = -1, ymax = 1,
+#'             loc_left = 0.7, loc_bottom = 0.7, width = 0.25
 #'         )
 #'     )
 #' )
@@ -119,7 +148,7 @@ plot_spec <- function(
 #' @seealso [plot_spec()], [with_inset()], [last_insetcfg()]
 #' @export
 #' @import rlang
-config_insetmap <- function(plot_data, specs, full_ratio = 1.0, crs = sf::st_crs("EPSG:4326"), border_args = list()) {
+config_insetmap <- function(plot_data, specs, full_ratio = 1.0, from_crs = sf::st_crs("EPSG:4326"), to_crs = sf::st_crs("EPSG:4326"), border_args = list()) {
     # Input validation
     if (!is.list(specs) || length(specs) == 0) {
         stop("specs must be a non-empty list of plot_spec objects")
@@ -136,23 +165,12 @@ config_insetmap <- function(plot_data, specs, full_ratio = 1.0, crs = sf::st_crs
         stop("Only one plot specification can have main = TRUE")
     }
 
-    quos <- enquo(plot_data)
-    expr <- get_expr(quos)
-    data_env <- get_env(quos)
-    if (!is_call(expr, "c")) {
-        data_quos <- list(quos)
-    } else {
-        data_exprs <- expr[-1]
-        data_quos <- lapply(data_exprs, function(x) new_quosure(x, data_env))
-    }
-    data_list <- lapply(data_quos, eval_tidy)
-    names(data_list) <- lapply(data_quos, as_name)
     cfg <- structure(
         list(
-            data = data_list,
             specs = specs,
             full_ratio = full_ratio,
-            crs = crs,
+            from_crs = from_crs,
+            to_crs = to_crs,
             border_args = utils::modifyList(
                 list(
                     color = "black",

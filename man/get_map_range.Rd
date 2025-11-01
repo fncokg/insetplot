@@ -2,23 +2,30 @@
 % Please edit documentation in R/utils.R
 \name{get_map_range}
 \alias{get_map_range}
-\title{Get Map Range and Aspect Ratio}
+\title{Get map ranges and aspect ratio}
 \usage{
 get_map_range(map, crs)
 }
 \arguments{
-\item{map}{A ggplot object containing a map.}
+\item{map}{A ggplot object (typically using coord_sf).}
 
-\item{crs}{A coordinate reference system specification.}
+\item{crs}{A coordinate reference system (CRS) used to determine whether the
+plot is in long/lat. Passed to sf::st_is_longlat().}
 }
 \value{
 A list with components:
-\item{xrange}{The range of x-coordinates}
-\item{yrange}{The range of y-coordinates}
-\item{aspect_ratio}{The aspect ratio of the map}
+\item{xrange}{Numeric length of x extent}
+\item{yrange}{Numeric length of y extent}
+\item{aspect_ratio}{Numeric width-to-height ratio after CRS adjustment}
 }
 \description{
-Calculates the coordinate ranges and aspect ratio of a ggplot map object,
-taking into account the coordinate reference system.
+Inspect a ggplot built with spatial coordinates and return the x/y ranges
+and the effective aspect ratio. If the target CRS is geographic
+(longitude/latitude), the ratio is adjusted by cos(mean(latitude)).
+}
+\details{
+Note: This inspects the plot scales via ggplot2 internals (layer scales),
+so the plot should include coordinate limits (e.g., coord_sf with xlim/ylim)
+to be meaningful.
 }
 \keyword{internal}

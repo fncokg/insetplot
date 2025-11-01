@@ -2,57 +2,56 @@
 % Please edit documentation in R/inset_config.R
 \name{config_insetmap}
 \alias{config_insetmap}
-\title{Configure Inset Map Settings}
+\title{Configure inset map settings}
 \usage{
 config_insetmap(
   plot_data,
   specs,
   full_ratio = 1,
-  crs = sf::st_crs("EPSG:4326"),
+  from_crs = sf::st_crs("EPSG:4326"),
+  to_crs = sf::st_crs("EPSG:4326"),
   border_args = list()
 )
 }
 \arguments{
-\item{plot_data}{A spatial data object, or multiple spatial data objects
-passed as arguments to \code{c()} (e.g., \code{c(data1, data2)}). These will be
-available for plotting in the inset map expressions using their original
-variable names. For a single dataset, can be passed directly without \code{c()}.}
+\item{plot_data}{Reserved for future use; currently ignored. Kept for API
+stability.}
 
-\item{specs}{A list of plot specifications created with \code{\link[=plot_spec]{plot_spec()}}.
-Each specification defines a subplot with its spatial extent and positioning.}
+\item{specs}{A non-empty list of \code{\link[=plot_spec]{plot_spec()}} objects.}
 
-\item{full_ratio}{Numeric. The WIDTH-TO-HEIGHT aspect ratio of the full plot area. NOTE: You should save the plot with a width-height ratio that matches this value. Otherwise, the inset plots may not be displayed correctly. Default is 1.0.}
+\item{full_ratio}{Numeric width-to-height ratio of the full canvas. For best
+results, save figures with this ratio. Default 1.}
 
-\item{crs}{A coordinate reference system specification. Default is
-EPSG:4326 (WGS84 geographic coordinates).}
+\item{from_crs, to_crs}{Coordinate reference systems passed to
+\code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} as \code{default_crs} and \code{crs} respectively. Defaults are
+EPSG:4326 for both.}
 
-\item{border_args}{A list of arguments passed to \code{\link[=map_border]{map_border()}} for styling
-inset plot borders. Default creates a black border with linewidth 1.}
+\item{border_args}{A list merged into defaults for \code{\link[=map_border]{map_border()}} arguments
+(defaults: \code{color = "black"}, \code{linewidth = 1}).}
 }
 \value{
-Invisibly returns the inset configuration object of class "insetcfg".
-The configuration is also stored globally for use with \code{\link[=with_inset]{with_inset()}}.
+Invisibly, an object of class "insetcfg" with fields: \code{specs},
+\code{full_ratio}, \code{from_crs}, \code{to_crs}, and \code{border_args}. It is also stored as
+the last configuration, retrievable via \code{\link[=last_insetcfg]{last_insetcfg()}}.
 }
 \description{
-Sets up the configuration for creating inset maps with multiple plot
-specifications. This function stores the configuration globally for use
-with \code{\link[=with_inset]{with_inset()}}.
+Create and store an inset configuration used by \code{\link[=with_inset]{with_inset()}}. The
+configuration contains subplot specifications, aspect ratio of the full
+canvas, CRS settings, and border appearance for insets.
 }
 \examples{
 library(sf)
 
-# Load some spatial data
-world_data <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
+g <- sf::st_sfc(sf::st_point(c(0, 0)), crs = 4326)
+d <- sf::st_sf(id = 1, geometry = g)
 
-# Configure inset map
 config_insetmap(
-    plot_data = world_data,
+    plot_data = d,
     specs = list(
         plot_spec(main = TRUE),
         plot_spec(
-            xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-            loc_left = 0.02, loc_bottom = 0.7,
-            width = 0.3
+            xmin = -1, xmax = 1, ymin = -1, ymax = 1,
+            loc_left = 0.7, loc_bottom = 0.7, width = 0.25
         )
     )
 )

@@ -2,19 +2,20 @@
 % Please edit documentation in R/utils.R
 \name{get_map_aspect_ratio}
 \alias{get_map_aspect_ratio}
-\title{Get Map Aspect Ratio}
+\title{Get map aspect ratio}
 \usage{
 get_map_aspect_ratio(map, crs)
 }
 \arguments{
-\item{map}{A ggplot object containing a map.}
+\item{map}{A ggplot object.}
 
-\item{crs}{A coordinate reference system specification.}
+\item{crs}{A coordinate reference system (CRS).}
 }
 \value{
-Numeric value representing the aspect ratio.
+A single numeric aspect ratio (width/height).
 }
 \description{
-A convenience function that returns only the aspect ratio of a map.
+Convenience wrapper around \code{\link[=get_map_range]{get_map_range()}} returning only the numeric
+aspect ratio.
 }
 \keyword{internal}

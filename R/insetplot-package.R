@@ -1,29 +1,27 @@
-#' insetplot: Create Inset Plots with Minimal Code Changes from ggplot2
+#' insetplot: compose ggplot2 with insets
 #'
-#' The insetplot package provides tools for creating inset plots and maps with
-#' minimal modifications to existing ggplot2 code. Simply wrap your existing
-#' plotting code - no need to rewrite plotting logic or learn new functions.
-#' Create combined visualizations with main plots and inset plots at specified
-#' locations and sizes.
+#' Utilities to compose a base ggplot with one or more inset plots using simple
+#' configuration. Keep your plotting code unchanged and specify insets with
+#' bounding boxes and positions.
 #'
 #' @section Main functions:
 #' \itemize{
-#'   \item \code{\link{config_insetmap}}: Configure inset map settings
-#'   \item \code{\link{plot_spec}}: Define plot specifications
-#'   \item \code{\link{with_inset}}: Create combined plots with insets (keeps your plotting code unchanged)
+#'   \item \code{\link{config_insetmap}}: Configure inset settings
+#'   \item \code{\link{plot_spec}}: Define subplot specifications
+#'   \item \code{\link{with_inset}}: Create combined plots with insets
 #' }
 #'
 #' @section Additional functions (not required for basic usage):
 #' \itemize{
-#'   \item \code{\link{gg2inset}}: Convert ggplots to insets
-#'   \item \code{\link{map_border}}: Add borders to map plots
+#'   \item \code{\link{gg2inset}}: Convert ggplots to inset layers
+#'   \item \code{\link{map_border}}: Add borders around inset plots
 #' }
 #'
 #' @section Key features:
 #' \itemize{
-#'   \item Minimal migration from ggplot2 - just wrap existing code
-#'   \item Automatically handles aspect ratios and positioning
-#'   \item Automatically handles data cropping and multiple subplots
+#'   \item Keep ggplot2 code intact, simply add configuration
+#'   \item Handles aspect ratios, positions, and borders
+#'   \item Works with multiple subplots
 #' }
 #'
 #' @name insetplot-package

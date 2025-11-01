@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{gg2inset}
 \alias{gg2inset}
-\title{Convert ggplot to Inset Plot}
+\title{Convert a ggplot to an inset layer}
 \usage{
 gg2inset(
   inset_map,
@@ -17,32 +17,38 @@ gg2inset(
 )
 }
 \arguments{
-\item{inset_map}{A ggplot object to be used as an inset.}
+\item{inset_map}{A ggplot object to be used as the inset.}
 
-\item{crs}{A coordinate reference system specification.}
+\item{crs}{A CRS used to compute the inset's aspect ratio when needed.}
 
-\item{x, y}{Numeric values between 0 and 1 specifying the position of the
-bottom-left corner of the inset within the main plot.}
+\item{x, y}{Numbers in [0, 1] for the bottom-left location on the canvas.}
 
-\item{inset_width, inset_height}{Numeric values specifying the width and
-height of the inset as proportions of the main plot.}
+\item{inset_width, inset_height}{Size of the inset as a fraction of the full
+canvas width/height. May be NULL to auto-derive.}
 
-\item{inset_aspect_ratio}{Numeric value specifying the aspect ratio of the
-inset. If NULL, calculated automatically from the inset_map.}
+\item{inset_aspect_ratio}{Optional numeric aspect ratio of the inset itself.
+When NULL, it is computed from \code{inset_map} and \code{crs}.}
 
-\item{full_aspect_ratio}{Numeric value specifying the aspect ratio of the
-full plot area. Default is 1.0.}
+\item{full_aspect_ratio}{Width-to-height ratio of the full canvas (default 1).}
 
-\item{...}{Additional arguments passed to \code{\link[cowplot:draw_plot]{cowplot::draw_plot()}}.}
+\item{...}{Passed to \code{\link[cowplot:draw_plot]{cowplot::draw_plot()}}.}
 }
 \value{
-A cowplot inset object that can be added to a ggplot.
+A cowplot layer that can be added to \code{ggdraw()}.
 }
 \description{
-A wrapper of \code{\link[cowplot:draw_plot]{cowplot::draw_plot()}} handling appropriate scaling and positioning based on the fixed aspect ratio of the inset.
+Helper around \code{\link[cowplot:draw_plot]{cowplot::draw_plot()}} that computes missing width/height from
+the inset's aspect ratio and the full canvas aspect ratio.
 }
 \details{
-The function is only recommended for advanced users who need to create custom insets. For most use cases, it is better to use \code{\link[=with_inset]{with_inset()}} which handles the inset creation automatically.
+\itemize{
+\item If both \code{inset_width} and \code{inset_height} are NULL, \code{inset_height} defaults
+to 0.2 (with a warning) and width is derived from aspect ratios.
+\item If only one of width/height is provided, the other is derived to preserve
+the inset aspect ratio on the full canvas.
+}
+
+For most users, prefer \code{\link[=with_inset]{with_inset()}} which orchestrates this automatically.
 }
 \examples{
 library(ggplot2)

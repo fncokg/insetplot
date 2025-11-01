@@ -2,83 +2,68 @@
 % Please edit documentation in R/with_inset.R
 \name{with_inset}
 \alias{with_inset}
-\title{Create Inset Plots with Spatial Data}
+\title{Compose a main plot with inset(s)}
 \usage{
-with_inset(
-  plot_expr,
-  .cfg = last_insetcfg(),
-  .return_subplots = FALSE,
-  .as_is = FALSE
-)
+with_inset(plot, .cfg = last_insetcfg(), .as_is = FALSE)
 }
 \arguments{
-\item{plot_expr}{Code for map visualization.
-This should be an expression that generates a ggplot object using the spatial data objects configured in \code{\link[=config_insetmap]{config_insetmap()}}.}
+\item{plot}{A ggplot object used as the default for each subplot (unless a
+specific spec provides its own \code{plot}).}
 
-\item{.cfg}{An inset configuration object. If NULL, uses the last configuration
-set by \code{\link[=config_insetmap]{config_insetmap()}}. Default is \code{\link[=last_insetcfg]{last_insetcfg()}}.}
+\item{.cfg}{An inset configuration (class "insetcfg"). Defaults to
+\code{\link[=last_insetcfg]{last_insetcfg()}}.}
 
-\item{.return_subplots}{Logical. If TRUE, returns a list with both the combined
-plot and individual subplots. Default is FALSE.}
-
-\item{.as_is}{Logical. If TRUE, returns the plot expression as-is without
-creating insets. Useful for debugging and code reuse. Default is FALSE.}
+\item{.as_is}{Logical. If TRUE, return \code{plot} as-is without creating insets.}
 }
 \value{
-If \code{.return_subplots} is FALSE, returns a cowplot drawing canvas object
-(which inherits from ggplot) containing the combined main plot and insets.
-If TRUE, returns a list with components:
-\item{full}{The combined plot (cowplot canvas)}
-\item{subplots}{A list of individual subplot objects}
+If \code{.return_subplots = FALSE}, a cowplot canvas (inherits from
+ggplot) containing the main plot plus inset layers. If TRUE, a list with:
+\item{full}{The combined plot}
+\item{subplots}{A list of individual subplot ggplot objects}
 }
 \description{
-Evaluates a plot expression using configured spatial data and plot specifications
-to create a combined visualization with main plot and inset plots.
+Build a combined plot using a base ggplot and an inset configuration created
+by \code{\link[=config_insetmap]{config_insetmap()}}. For each plot specification in the configuration, the
+function either uses the provided \code{spec$plot} or the supplied \code{plot} and adds
+spatial coordinates via \code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} with the given bounding box.
+Non-main subplots receive a border from \code{\link[=map_border]{map_border()}}.
 }
 \details{
-This function works by:
-\enumerate{
-\item Cropping the spatial data according to each plot specification's bounding box
-\item Evaluating the plot expression in an environment containing the cropped data
-\item Adding coordinate systems and borders as specified
-\item Combining all plots using cowplot
+The argument \code{.as_is = TRUE} returns the input \code{plot} unchanged and does not
+require any configuration. This is convenient for reusing the same plotting
+code outside the inset workflow or for testing.
+\itemize{
+\item Bounding boxes come from each \code{plot_spec()} in \code{.cfg$specs}. Missing bbox
+values are filled using the overall extent if available in the configuration.
+\item Coordinate systems are applied with \verb{coord_sf(default_crs = .cfg$from_crs, crs = .cfg$to_crs, xlim/ylim = bbox, expand = FALSE)}.
+\item Inset sizes: when a spec has \code{no_scale = TRUE}, the inset width/height are
+derived from the spatial ranges relative to the main plot; otherwise the
+requested \code{width}/\code{height} are used.
+\item Best results are achieved when the saved image width-to-height ratio equals
+\code{.cfg$full_ratio}.
 }
-
-The spatial data objects are made available in the plot expression environment
-using the names specified when configuring the inset map.
-}
-\note{
-The best display of the inset map is achieved only when the output image
-is saved with a width-height ratio that matches the \code{full_ratio} specified
-in \code{\link[=config_insetmap]{config_insetmap()}}. Therefore, plots displayed in RStudio or other viewers
-may not accurately reflect the final output.
 }
 \examples{
 library(sf)
 library(ggplot2)
 
-# Load spatial data
-nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
+nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
-# Configure inset map
 config_insetmap(
-    plot_data = nc,
     specs = list(
         plot_spec(main = TRUE),
         plot_spec(
             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-            loc_left = 0.7, loc_bottom = 0.7,
-            width = 0.3
+            loc = "left bottom", width = 0.3
         )
-    )
+    ),
+    full_ratio = 16 / 9
 )
 
-# Create inset plot
-with_inset({
-    ggplot(nc) +
-        geom_sf(aes(fill = AREA)) +
-        theme_void()
-})
+base <- ggplot(nc, aes(fill = AREA)) +
+    geom_sf() +
+    theme_void()
+with_inset(base)
 
 }
 \seealso{

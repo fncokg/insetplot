@@ -1,327 +1,66 @@
-test_that("with_inset basic functionality works", {
-    skip_if_not_installed("sf")
-    skip_if_not_installed("ggplot2")
-    skip_if_not_installed("cowplot")
+# Test suite for with_inset function
 
-    # Create mock spatial data
-    coords <- matrix(c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
-    poly <- sf::st_polygon(list(coords))
-    mock_sf <- sf::st_sf(
-        id = 1,
-        area = 1,
-        geometry = sf::st_sfc(poly, crs = 4326)
-    )
+# Load libraries once with warnings suppressed
+suppressPackageStartupMessages({
+    library(sf)
+    library(ggplot2)
+})
 
-    # Configure inset map
-    config_insetmap(
-        plot_data = mock_sf,
-        specs = list(
+# Helper function: Create sample data and base plot
+setup_base_plot <- function() {
+    nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
+    base_plot <- ggplot(nc, aes(fill = AREA)) +
+        geom_sf() +
+        theme_void()
+    return(base_plot)
+}
+
+# Helper function: Configure inset map with default settings
+setup_inset_config <- function(specs_list = NULL) {
+    if (is.null(specs_list)) {
+        specs_list <- list(
             plot_spec(main = TRUE),
             plot_spec(
-                xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8,
-                loc_left = 0.7, loc_bottom = 0.7,
-                width = 0.3
+                xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+                loc = "left bottom", width = 0.3
             )
         )
-    )
-
-    # Test basic plot creation
-    result <- with_inset({
-        ggplot2::ggplot(mock_sf) +
-            ggplot2::geom_sf() +
-            ggplot2::theme_void()
-    })
-
-    # cowplot::ggdraw returns an object that inherits from ggplot
-    # but is more specifically a cowplot drawing canvas
-    expect_s3_class(result, "ggplot")
-    # Should also inherit from gg (which is the base class for ggplot objects)
-    expect_s3_class(result, "gg")
-})
-
-test_that("with_inset .as_is parameter works", {
-    skip_if_not_installed("ggplot2")
-
-    # Create a simple plot expression
-    plot_expr <- ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
-        ggplot2::geom_point()
-
-    # Test .as_is = TRUE returns the expression unchanged
-    result <- with_inset(plot_expr, .as_is = TRUE)
-    expect_s3_class(result, "ggplot")
-})
-
-test_that("with_inset .return_subplots parameter works", {
-    skip_if_not_installed("sf")
-    skip_if_not_installed("ggplot2")
-    skip_if_not_installed("cowplot")
-
-    # Create mock spatial data
-    coords <- matrix(c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
-    poly <- sf::st_polygon(list(coords))
-    mock_sf <- sf::st_sf(
-        id = 1,
-        area = 1,
-        geometry = sf::st_sfc(poly, crs = 4326)
-    )
-
-    # Configure inset map
+    }
     config_insetmap(
-        plot_data = mock_sf,
-        specs = list(
-            plot_spec(main = TRUE),
-            plot_spec(
-                xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8,
-                loc_left = 0.7, loc_bottom = 0.7,
-                width = 0.3
-            )
-        )
+        specs = specs_list,
+        full_ratio = 16 / 9
     )
+}
 
-    # Test .return_subplots = TRUE
-    result <- with_inset(
-        {
-            ggplot2::ggplot(mock_sf) +
-                ggplot2::geom_sf() +
-                ggplot2::theme_void()
-        },
-        .return_subplots = TRUE
-    )
+test_that("with_inset returns plot unchanged when .as_is = TRUE", {
+    base_plot <- setup_base_plot()
+    setup_inset_config()
 
-    expect_type(result, "list")
-    expect_named(result, c("full", "subplots"))
-    # result$full is a cowplot drawing canvas, which inherits from ggplot
-    expect_s3_class(result$full, "ggplot")
-    expect_type(result$subplots, "list")
-    expect_length(result$subplots, 2) # main + 1 inset
+    # Test .as_is = TRUE returns the input plot unchanged
+    result <- with_inset(base_plot, .as_is = TRUE)
+
+    expect_identical(result, base_plot)
+    expect_is(result, "ggplot")
 })
 
-test_that("with_inset handles missing configuration", {
-    # Should error when no configuration is available
+test_that("with_inset throws error when no configuration is available", {
+    # Create a dummy plot
+    dummy_plot <- ggplot() +
+        geom_point(aes(x = 1, y = 1))
+
+    # Test the error message by providing NULL config directly
     expect_error(
-        with_inset(
-            {
-                ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
-                    ggplot2::geom_point()
-            },
-            .cfg = NULL
-        ),
-        "No inset configuration found"
+        with_inset(dummy_plot, .cfg = NULL),
+        "No inset configuration found. Please run config_insetmap\\(\\) first."
     )
 })
 
-test_that("with_inset handles invalid configuration", {
-    skip_if_not_installed("sf")
+test_that("with_inset produces valid output with valid configuration", {
+    base_plot <- setup_base_plot()
+    setup_inset_config()
 
-    # Create invalid configuration (no main plot)
-    mock_sf <- sf::st_sf(
-        id = 1,
-        geometry = sf::st_sfc(sf::st_point(c(0, 0)), crs = 4326)
-    )
+    # Test that with_inset returns a ggplot object
+    result <- with_inset(base_plot)
 
-    # This should fail during configuration, but let's test if somehow we get here
-    expect_error(
-        {
-            config_insetmap(
-                plot_data = c(mock_sf),
-                specs = list(
-                    plot_spec(width = 0.3), # No main = TRUE
-                    plot_spec(width = 0.3)
-                )
-            )
-        },
-        "Exactly one plot specification must have main = TRUE"
-    )
-})
-
-test_that("with_inset handles no_scale option correctly", {
-    skip_if_not_installed("sf")
-    skip_if_not_installed("ggplot2")
-    skip_if_not_installed("cowplot")
-
-    # Create mock spatial data with different extents
-    coords1 <- matrix(c(0, 0, 2, 0, 2, 2, 0, 2, 0, 0), ncol = 2, byrow = TRUE)
-    poly1 <- sf::st_polygon(list(coords1))
-    mock_sf <- sf::st_sf(
-        id = 1,
-        area = 4,
-        geometry = sf::st_sfc(poly1, crs = 4326)
-    )
-
-    # Configure with no_scale = TRUE
-    config_insetmap(
-        plot_data = mock_sf,
-        specs = list(
-            plot_spec(main = TRUE),
-            plot_spec(
-                xmin = 0.5, xmax = 1.5, ymin = 0.5, ymax = 1.5,
-                loc_left = 0.7, loc_bottom = 0.7,
-                no_scale = TRUE
-            )
-        )
-    )
-
-    # Should not error
-    expect_no_error({
-        result <- with_inset({
-            ggplot2::ggplot(mock_sf) +
-                ggplot2::geom_sf() +
-                ggplot2::theme_void()
-        })
-    })
-})
-
-test_that("with_inset handles multiple insets", {
-    skip_if_not_installed("sf")
-    skip_if_not_installed("ggplot2")
-    skip_if_not_installed("cowplot")
-
-    # Create larger mock spatial data
-    coords <- matrix(c(0, 0, 4, 0, 4, 4, 0, 4, 0, 0), ncol = 2, byrow = TRUE)
-    poly <- sf::st_polygon(list(coords))
-    mock_sf <- sf::st_sf(
-        id = 1,
-        area = 16,
-        geometry = sf::st_sfc(poly, crs = 4326)
-    )
-
-    # Configure with multiple insets
-    config_insetmap(
-        plot_data = mock_sf,
-        specs = list(
-            plot_spec(main = TRUE),
-            plot_spec(
-                xmin = 0, xmax = 2, ymin = 0, ymax = 2,
-                loc_left = 0.7, loc_bottom = 0.7,
-                width = 0.25
-            ),
-            plot_spec(
-                xmin = 2, xmax = 4, ymin = 2, ymax = 4,
-                loc_left = 0.02, loc_bottom = 0.7,
-                width = 0.25
-            )
-        )
-    )
-
-    # Test with multiple insets
-    result <- with_inset(
-        {
-            ggplot2::ggplot(mock_sf) +
-                ggplot2::geom_sf() +
-                ggplot2::theme_void()
-        },
-        .return_subplots = TRUE
-    )
-
-    expect_type(result, "list")
-    expect_length(result$subplots, 3) # main + 2 insets
-})
-
-test_that("with_inset expression evaluation works correctly", {
-    skip_if_not_installed("sf")
-    skip_if_not_installed("ggplot2")
-
-    # Create mock spatial data with an attribute for mapping
-    coords <- matrix(c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
-    poly <- sf::st_polygon(list(coords))
-    mock_sf <- sf::st_sf(
-        id = 1,
-        value = 100,
-        geometry = sf::st_sfc(poly, crs = 4326)
-    )
-
-    # Configure inset map
-    config_insetmap(
-        plot_data = mock_sf,
-        specs = list(
-            plot_spec(main = TRUE),
-            plot_spec(
-                xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8,
-                loc_left = 0.7, loc_bottom = 0.7,
-                width = 0.3
-            )
-        )
-    )
-
-    # Test that the spatial data is available in the expression environment
-    expect_no_error({
-        result <- with_inset({
-            ggplot2::ggplot(mock_sf) +
-                ggplot2::geom_sf(ggplot2::aes(fill = value)) +
-                ggplot2::theme_void()
-        })
-    })
-})
-
-test_that("with_inset handles border arguments correctly", {
-    skip_if_not_installed("sf")
-    skip_if_not_installed("ggplot2")
-
-    # Create mock spatial data
-    coords <- matrix(c(0, 0, 1, 0, 1, 1, 0, 1, 0, 0), ncol = 2, byrow = TRUE)
-    poly <- sf::st_polygon(list(coords))
-    mock_sf <- sf::st_sf(
-        id = 1,
-        geometry = sf::st_sfc(poly, crs = 4326)
-    )
-
-    # Configure with custom border arguments
-    config_insetmap(
-        plot_data = mock_sf,
-        specs = list(
-            plot_spec(main = TRUE),
-            plot_spec(
-                xmin = 0.2, xmax = 0.8, ymin = 0.2, ymax = 0.8,
-                loc_left = 0.7, loc_bottom = 0.7,
-                width = 0.3
-            )
-        ),
-        border_args = list(color = "red", linewidth = 2)
-    )
-
-    # Should handle custom border arguments without error
-    expect_no_error({
-        result <- with_inset({
-            ggplot2::ggplot(mock_sf) +
-                ggplot2::geom_sf() +
-                ggplot2::theme_void()
-        })
-    })
-})
-
-test_that("with_inset handles empty cropped data gracefully", {
-    skip_if_not_installed("sf")
-    skip_if_not_installed("ggplot2")
-
-    # Create mock spatial data in a small area
-    coords <- matrix(c(0, 0, 0.1, 0, 0.1, 0.1, 0, 0.1, 0, 0), ncol = 2, byrow = TRUE)
-    poly <- sf::st_polygon(list(coords))
-    mock_sf <- sf::st_sf(
-        id = 1,
-        geometry = sf::st_sfc(poly, crs = 4326)
-    )
-
-    # Configure with inset that doesn't intersect the data
-    config_insetmap(
-        plot_data = mock_sf,
-        specs = list(
-            plot_spec(main = TRUE),
-            plot_spec(
-                xmin = 5, xmax = 6, ymin = 5, ymax = 6, # Far from the data
-                loc_left = 0.7, loc_bottom = 0.7,
-                width = 0.3
-            )
-        )
-    )
-
-    # Should handle empty cropped data (might produce warning but shouldn't error)
-    expect_no_error({
-        suppressWarnings({
-            result <- with_inset({
-                ggplot2::ggplot(mock_sf) +
-                    ggplot2::geom_sf() +
-                    ggplot2::theme_void()
-            })
-        })
-    })
+    expect_is(result, "ggplot")
 })

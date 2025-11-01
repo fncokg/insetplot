@@ -2,25 +2,25 @@
 % Please edit documentation in R/utils.R
 \name{map_border}
 \alias{map_border}
-\title{Add Border to Map Plot}
+\title{Add a border around a map plot}
 \usage{
 map_border(color = "black", linewidth = 1, fill = "white", ...)
 }
 \arguments{
-\item{color}{Character string specifying the border color. Default is "black".}
+\item{color}{Border color. Default "black".}
 
-\item{linewidth}{Numeric value specifying the border line width. Default is 1.}
+\item{linewidth}{Border line width. Default 1.}
 
-\item{fill}{Character string specifying the background fill color. Default is "white".}
+\item{fill}{Background fill color. Default "white".}
 
-\item{...}{Additional arguments passed to \code{\link[ggplot2:element]{ggplot2::element_rect()}}.}
+\item{...}{Passed to \code{\link[ggplot2:element]{ggplot2::element_rect()}}.}
 }
 \value{
-A ggplot2 theme object that can be added to a plot.
+A ggplot2 theme to add with \code{+}.
 }
 \description{
-Creates a theme element that adds a border around a map plot. Useful for
-distinguishing inset plots from the main plot.
+Returns a small theme that draws a rectangular border around the plot area.
+Handy for visually separating inset plots from the main plot.
 }
 \examples{
 library(ggplot2)

@@ -2,44 +2,53 @@
 % Please edit documentation in R/inset_config.R
 \name{plot_spec}
 \alias{plot_spec}
-\title{Create Plot Specification for Inset Maps}
+\title{Create a plot specification for insets}
 \usage{
 plot_spec(
-  xmin = NULL,
-  xmax = NULL,
-  ymin = NULL,
-  ymax = NULL,
+  xmin = NA,
+  xmax = NA,
+  ymin = NA,
+  ymax = NA,
+  loc = "",
   loc_left = 0,
   loc_bottom = 0,
   width = NULL,
   height = NULL,
   no_scale = FALSE,
-  main = FALSE
+  main = FALSE,
+  plot = NULL
 )
 }
 \arguments{
-\item{xmin, xmax, ymin, ymax}{Numeric values defining the bounding box coordinates
-for cropping the spatial data. If NULL, the full extent will be used.}
+\item{xmin, xmax, ymin, ymax}{Numeric bbox coordinates for the subplot. Any may
+be NA and will be inferred from the overall extent if possible.}
 
-\item{loc_left, loc_bottom}{Numeric values between 0 and 1 specifying the
-position of the inset plot within the main plot area. Default is (0, 0).}
+\item{loc}{A convenience string like "left bottom", "center top", or
+"right center". When supplied, it overrides \code{loc_left}/\code{loc_bottom} with
+predefined anchor positions close to the plot edges (with small margins).}
 
-\item{width, height}{Numeric values specifying the width and height of the
-inset plot as proportions of the main plot. If both are provided, a warning
-is issued as aspect ratio maintenance is prioritized.}
+\item{loc_left, loc_bottom}{Numbers in [0, 1] for the bottom-left position of
+the inset on the full canvas. Ignored when \code{main = TRUE}.}
 
-\item{no_scale}{Logical. If TRUE, the inset size is determined automatically
-based on the spatial extent relative to the main plot. Default is FALSE.}
+\item{width, height}{Optional size of the inset as a fraction of canvas width/
+height. Supplying both is allowed but not recommended; aspect ratio will be
+prioritized. If both are NULL and \code{no_scale = FALSE}, \code{no_scale} is set to
+TRUE with a warning.}
 
-\item{main}{Logical. If TRUE, this specification defines the main plot.
-Only one specification should have main = TRUE. Default is FALSE.}
+\item{no_scale}{Logical. If TRUE, the inset's width/height are derived from
+the spatial ranges relative to the main plot. See \code{\link[=with_inset]{with_inset()}}.}
+
+\item{main}{Logical. TRUE marks this spec as the main plot (exactly one).}
+
+\item{plot}{Optional ggplot object to use for this spec instead of the base
+plot passed to \code{\link[=with_inset]{with_inset()}}.}
 }
 \value{
-A list containing the plot specification parameters.
+A list with elements \code{bbox}, \code{loc_left}, \code{loc_bottom}, \code{width},
+\code{height}, \code{no_scale}, \code{main}, and \code{plot}.
 }
 \description{
-Defines the spatial extent and positioning parameters for individual plots
-in an inset map configuration.
+Define the spatial extent and positioning for each subplot (main or inset).
 }
 \examples{
 # Create a main plot specification
