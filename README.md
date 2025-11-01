@@ -42,7 +42,7 @@ You can install the development version of insetplot from GitHub with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("username/insetplot")
+devtools::install_github("fncokg/insetplot")
 ```
 
 ## Features
