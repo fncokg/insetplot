@@ -5,58 +5,64 @@
 \title{Configure inset map settings}
 \usage{
 config_insetmap(
-  plot_data,
+  data_list,
   specs,
   full_ratio = 1,
-  from_crs = sf::st_crs("EPSG:4326"),
-  to_crs = sf::st_crs("EPSG:4326"),
+  crs = sf::st_crs("EPSG:4326"),
   border_args = list()
 )
 }
 \arguments{
-\item{plot_data}{Reserved for future use; currently ignored. Kept for API
-stability.}
+\item{data_list}{A list of spatial data objects (sf class). All elements
+must inherit from 'sf'. These data are used to compute the overall
+bounding box and coordinate systems for the insets.}
 
-\item{specs}{A non-empty list of \code{\link[=plot_spec]{plot_spec()}} objects.}
+\item{specs}{A non-empty list of \code{\link[=inset_spec]{inset_spec()}} objects.}
 
 \item{full_ratio}{Numeric width-to-height ratio of the full canvas. For best
 results, save figures with this ratio. Default 1.}
 
-\item{from_crs, to_crs}{Coordinate reference systems passed to
-\code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} as \code{default_crs} and \code{crs} respectively. Defaults are
-EPSG:4326 for both.}
+\item{crs}{Coordinate reference system to transform to, passed to
+\code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} as \code{crs}. The CRS of the first sf object in
+\code{data_list} is used as \code{default_crs} (from_crs). Default EPSG:4326.}
 
 \item{border_args}{A list merged into defaults for \code{\link[=map_border]{map_border()}} arguments
 (defaults: \code{color = "black"}, \code{linewidth = 1}).}
 }
 \value{
-Invisibly, an object of class "insetcfg" with fields: \code{specs},
-\code{full_ratio}, \code{from_crs}, \code{to_crs}, and \code{border_args}. It is also stored as
-the last configuration, retrievable via \code{\link[=last_insetcfg]{last_insetcfg()}}.
+Invisibly, an object of class "insetcfg" with fields: \code{data_list},
+\code{specs}, \code{main_idx}, \code{full_ratio}, \code{from_crs}, \code{to_crs}, and \code{border_args}.
+It is also stored as the last configuration, retrievable via \code{\link[=last_insetcfg]{last_insetcfg()}}.
 }
 \description{
 Create and store an inset configuration used by \code{\link[=with_inset]{with_inset()}}. The
 configuration contains subplot specifications, aspect ratio of the full
 canvas, CRS settings, and border appearance for insets.
 }
+\details{
+Each spec in \code{specs} must have its bbox filled in (missing NA values are
+replaced with the overall extent). The \code{data_bbox} for each spec is computed
+by cropping the data in \code{data_list} to the spec's bbox and transforming to
+the target CRS.
+}
 \examples{
 library(sf)
 
-g <- sf::st_sfc(sf::st_point(c(0, 0)), crs = 4326)
-d <- sf::st_sf(id = 1, geometry = g)
+nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 config_insetmap(
-    plot_data = d,
+    data_list = list(nc),
     specs = list(
-        plot_spec(main = TRUE),
-        plot_spec(
-            xmin = -1, xmax = 1, ymin = -1, ymax = 1,
-            loc_left = 0.7, loc_bottom = 0.7, width = 0.25
+        inset_spec(main = TRUE),
+        inset_spec(
+            xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+            loc = "left bottom", width = 0.3
         )
-    )
+    ),
+    full_ratio = 16 / 9
 )
 
 }
 \seealso{
-\code{\link[=plot_spec]{plot_spec()}}, \code{\link[=with_inset]{with_inset()}}, \code{\link[=last_insetcfg]{last_insetcfg()}}
+\code{\link[=inset_spec]{inset_spec()}}, \code{\link[=with_inset]{with_inset()}}, \code{\link[=last_insetcfg]{last_insetcfg()}}
 }

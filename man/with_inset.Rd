@@ -4,41 +4,59 @@
 \alias{with_inset}
 \title{Compose a main plot with inset(s)}
 \usage{
-with_inset(plot, .cfg = last_insetcfg(), .as_is = FALSE)
+with_inset(
+  plot = NULL,
+  .cfg = last_insetcfg(),
+  .as_is = FALSE,
+  .return_subplots = FALSE
+)
 }
 \arguments{
-\item{plot}{A ggplot object used as the default for each subplot (unless a
-specific spec provides its own \code{plot}).}
+\item{plot}{Optional. A ggplot object used as the default for each subplot
+(unless a specific spec provides its own \code{plot}). If NULL and all specs have
+their own \code{plot} defined, this parameter is ignored. Default NULL.}
 
-\item{.cfg}{An inset configuration (class "insetcfg"). Defaults to
-\code{\link[=last_insetcfg]{last_insetcfg()}}.}
+\item{.cfg}{An inset configuration (class "insetcfg"), typically created by
+\code{\link[=config_insetmap]{config_insetmap()}}. Defaults to \code{\link[=last_insetcfg]{last_insetcfg()}} if NULL.}
 
-\item{.as_is}{Logical. If TRUE, return \code{plot} as-is without creating insets.}
+\item{.as_is}{Logical. If TRUE, return \code{plot} as-is without creating insets.
+Default FALSE. Requires \code{plot} to be non-NULL.}
+
+\item{.return_subplots}{Logical. If FALSE (default), returns a combined plot
+using \code{\link[cowplot:ggdraw]{cowplot::ggdraw()}} with the main plot and inset layers. If TRUE,
+returns a list with: \item{full}{The combined plot} \item{subplots}{A list
+of individual ggplot objects for each subplot}.}
 }
 \value{
-If \code{.return_subplots = FALSE}, a cowplot canvas (inherits from
-ggplot) containing the main plot plus inset layers. If TRUE, a list with:
-\item{full}{The combined plot}
-\item{subplots}{A list of individual subplot ggplot objects}
+If \code{.return_subplots = FALSE}, a ggplot object (via cowplot::ggdraw)
+containing the main plot plus inset layers. If TRUE, a list with elements
+\code{full} (the combined plot) and \code{subplots} (individual ggplot objects).
 }
 \description{
-Build a combined plot using a base ggplot and an inset configuration created
-by \code{\link[=config_insetmap]{config_insetmap()}}. For each plot specification in the configuration, the
-function either uses the provided \code{spec$plot} or the supplied \code{plot} and adds
-spatial coordinates via \code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} with the given bounding box.
-Non-main subplots receive a border from \code{\link[=map_border]{map_border()}}.
+Build a combined plot using an inset configuration created by \code{\link[=config_insetmap]{config_insetmap()}}.
+For each plot specification in the configuration, the function either uses the
+provided \code{spec$plot} or the supplied \code{plot} parameter and adds spatial coordinates
+via \code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} with the given bounding box. Non-main subplots receive
+a border from \code{\link[=map_border]{map_border()}}.
 }
 \details{
 The argument \code{.as_is = TRUE} returns the input \code{plot} unchanged and does not
 require any configuration. This is convenient for reusing the same plotting
 code outside the inset workflow or for testing.
 \itemize{
-\item Bounding boxes come from each \code{plot_spec()} in \code{.cfg$specs}. Missing bbox
-values are filled using the overall extent if available in the configuration.
-\item Coordinate systems are applied with \verb{coord_sf(default_crs = .cfg$from_crs, crs = .cfg$to_crs, xlim/ylim = bbox, expand = FALSE)}.
-\item Inset sizes: when a spec has \code{no_scale = TRUE}, the inset width/height are
-derived from the spatial ranges relative to the main plot; otherwise the
-requested \code{width}/\code{height} are used.
+\item Bounding boxes come from each \code{inset_spec()} in \code{.cfg$specs}. Missing bbox
+values are filled using the overall extent from cropped data in the configuration.
+\item Each subplot receives coordinate system transformation via \code{coord_sf()} using
+\code{default_crs = .cfg$from_crs}, \code{crs = .cfg$to_crs}, and the spec's bbox.
+\item Inset sizes are determined by:
+\itemize{
+\item If \code{spec$scale_factor} is not NA, width/height are derived from
+spatial ranges relative to the main plot multiplied by scale_factor.
+\item Otherwise, \code{width} and/or \code{height} from the spec are used. If one
+is NA, it is computed from the other using the inset's aspect ratio.
+}
+\item Non-main insets are positioned using \code{cowplot::draw_plot()} with
+\verb{halign = 0, valign = 0} (anchored at bottom-left).
 \item Best results are achieved when the saved image width-to-height ratio equals
 \code{.cfg$full_ratio}.
 }
@@ -50,9 +68,10 @@ library(ggplot2)
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 config_insetmap(
+    data_list = list(nc),
     specs = list(
-        plot_spec(main = TRUE),
-        plot_spec(
+        inset_spec(main = TRUE),
+        inset_spec(
             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
             loc = "left bottom", width = 0.3
         )
@@ -60,12 +79,28 @@ config_insetmap(
     full_ratio = 16 / 9
 )
 
+# Supply base plot for all subplots
 base <- ggplot(nc, aes(fill = AREA)) +
     geom_sf() +
     theme_void()
 with_inset(base)
 
+# Or supply custom plots in each inset_spec, then call with_inset() without plot
+config_insetmap(
+    data_list = list(nc),
+    specs = list(
+        inset_spec(main = TRUE, plot = base),
+        inset_spec(
+            xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+            loc = "left bottom", width = 0.3,
+            plot = base # Each spec has its own plot
+        )
+    ),
+    full_ratio = 16 / 9
+)
+with_inset() # plot parameter is optional
+
 }
 \seealso{
-\code{\link[=config_insetmap]{config_insetmap()}}, \code{\link[=plot_spec]{plot_spec()}}, \code{\link[=last_insetcfg]{last_insetcfg()}}
+\code{\link[=config_insetmap]{config_insetmap()}}, \code{\link[=inset_spec]{inset_spec()}}, \code{\link[=last_insetcfg]{last_insetcfg()}}, \code{\link[=map_border]{map_border()}}
 }

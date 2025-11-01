@@ -18,16 +18,16 @@ This is used internally by \code{\link[=with_inset]{with_inset()}} when no confi
 library(sf)
 
 # Load some spatial data
-world_data <- sf::st_read(system.file("shape/nc.shp", package = "sf"))
+nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 # Configure inset map
 config_insetmap(
-    plot_data = world_data,
+    data_list = list(nc),
     specs = list(
-        plot_spec(main = TRUE),
-        plot_spec(
+        inset_spec(main = TRUE),
+        inset_spec(
             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-            loc_left = 0.02, loc_bottom = 0.7,
+            loc = "left bottom",
             width = 0.3
         )
     )

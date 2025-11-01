@@ -4,45 +4,93 @@
 \name{insetplot-package}
 \alias{insetplot-package}
 \alias{insetplot}
-\title{insetplot: compose ggplot2 with insets}
+\title{insetplot: Compose ggplot2 maps with insets}
 \description{
-Utilities to compose a base ggplot with one or more inset plots using simple
-configuration. Keep your plotting code unchanged and specify insets with
-bounding boxes and positions.
+Utilities to compose a base ggplot with one or more inset maps using simple
+spatial configuration. Define insets with bounding boxes, positions, and sizes,
+then reuse the same plotting code for all subplots.
 }
+\section{Core workflow}{
+
+\enumerate{
+\item Use \code{\link{inset_spec}} to define spatial extents and positions
+for main and inset plots
+\item Use \code{\link{config_insetmap}} to create a reusable configuration
+from your spatial data and inset specifications
+\item Use \code{\link{with_inset}} to apply the configuration to a ggplot,
+automatically composing main and inset layers
+}
+}
+
 \section{Main functions}{
 
 \itemize{
-\item \code{\link{config_insetmap}}: Configure inset settings
-\item \code{\link{plot_spec}}: Define subplot specifications
-\item \code{\link{with_inset}}: Create combined plots with insets
+\item \code{\link{inset_spec}}: Define spatial extent and positioning for
+each subplot (main or inset)
+\item \code{\link{config_insetmap}}: Create and store an inset map
+configuration with CRS and border settings
+\item \code{\link{with_inset}}: Compose a ggplot with configured insets
+using bounding boxes and aspect ratios
+\item \code{\link{last_insetcfg}}: Retrieve the most recently created
+inset configuration
 }
 }
 
-\section{Additional functions (not required for basic usage)}{
+\section{Utility functions}{
 
 \itemize{
-\item \code{\link{gg2inset}}: Convert ggplots to inset layers
-\item \code{\link{map_border}}: Add borders around inset plots
+\item \code{\link{map_border}}: Add a rectangular border around inset plots
 }
 }
 
 \section{Key features}{
 
 \itemize{
-\item Keep ggplot2 code intact, simply add configuration
-\item Handles aspect ratios, positions, and borders
-\item Works with multiple subplots
+\item Keep ggplot2 plotting code unchanged; specify insets via configuration
+\item Automatic handling of aspect ratios, canvas proportions, and positions
+\item Support for scale factors and explicit width/height specifications
+\item Coordinate reference system (CRS) transformations via sf and ggplot2::coord_sf
+\item Borders and styling for inset plots to visually separate them
+\item Multiple insets with flexible positioning (corners, edges, or custom locations)
+}
+}
+
+\section{Workflow example}{
+
+\preformatted{
+library(sf)
+library(ggplot2)
+library(insetplot)
+
+# Load spatial data
+nc <- st_read(system.file("shape/nc.shp", package = "sf"))
+
+# Configure insets: main plot + left-bottom inset
+config_insetmap(
+    data_list = list(nc),
+    specs = list(
+        inset_spec(main = TRUE),
+        inset_spec(
+            xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+            loc = "left bottom", width = 0.3
+        )
+    ),
+    full_ratio = 16 / 9
+)
+
+# Create base plot
+base_map <- ggplot(nc, aes(fill = AREA)) +
+    geom_sf() +
+    theme_void()
+
+# Compose with insets
+with_inset(base_map)
 }
 }
 
 \seealso{
-Useful links:
-\itemize{
-  \item \url{https://github.com/fncokg/insetplot}
-  \item Report bugs at \url{https://github.com/fncokg/insetplot/issues}
-}
-
+\code{\link{inset_spec}}, \code{\link{config_insetmap}},
+\code{\link{with_inset}}, \code{\link{map_border}}
 }
 \author{
 \strong{Maintainer}: Chao Kong \email{kongchao1998@gmail.com} (\href{https://orcid.org/0000-0002-6404-6142}{ORCID}) [copyright holder]
