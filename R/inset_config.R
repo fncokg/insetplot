@@ -1,33 +1,3 @@
-.fill_bbox <- function(bbox, overall_bbox) {
-    for (name in names(bbox)) {
-        if (is.na(bbox[[name]])) {
-            bbox[[name]] <- overall_bbox[[name]]
-        }
-    }
-    return(bbox)
-}
-
-#' Union of multiple bounding boxes
-#'
-#' Internal helper that returns the overall extent (ymin, xmin, xmax, ymax)
-#' covering all provided bounding boxes.
-#'
-#' @param bbox_list A list of bounding boxes as named numeric vectors with
-#'   names: ymin, xmin, xmax, ymax.
-#'
-#' @return A named numeric vector (ymin, xmin, xmax, ymax).
-#' @keywords internal
-#' @noRd
-.get_widest_bbox <- function(bbox_list) {
-    mat <- do.call(rbind, bbox_list)
-    c(
-        ymin = min(mat[, "ymin"]),
-        xmin = min(mat[, "xmin"]),
-        xmax = max(mat[, "xmax"]),
-        ymax = max(mat[, "ymax"])
-    )
-}
-
 #' Create a plot specification for insets
 #'
 #' Define the spatial extent and positioning for each subplot (main or inset).
@@ -187,7 +157,6 @@ inset_spec <- function(
 #'
 #' @seealso [inset_spec()], [with_inset()], [last_insetcfg()]
 #' @export
-#' @import rlang
 config_insetmap <- function(data_list, specs, full_ratio = 1.0, crs = sf::st_crs("EPSG:4326"), border_args = list()) {
     # Input validation
     if (missing(data_list) || length(data_list) == 0 || !all(sapply(data_list, function(x) inherits(x, "sf")))) {
@@ -209,16 +178,13 @@ config_insetmap <- function(data_list, specs, full_ratio = 1.0, crs = sf::st_crs
     }
 
     from_crs <- st_crs(data_list[[1]])
-    widest_bbox <- .get_widest_bbox(lapply(data_list, st_bbox))
+    widest_bbox <- get_widest_bbox(data_list)
     main_idx <- NULL
     for (i in seq_along(specs)) {
         spec <- specs[[i]]
         # Fill missing bbox values
         full_bbox <- .fill_bbox(spec$bbox, widest_bbox)
-        data_bbox <- .get_widest_bbox(lapply(data_list, function(data) {
-            cropped <- suppressWarnings(st_crop(data, full_bbox))
-            st_bbox(st_transform(cropped, crs))
-        }))
+        data_bbox <- get_widest_bbox(lapply(data_list, function(data) st_transform(suppressWarnings(st_crop(data, full_bbox)), crs)))
         spec$data_bbox <- data_bbox
         spec$bbox <- full_bbox
         specs[[i]] <- spec
@@ -271,13 +237,23 @@ config_insetmap <- function(data_list, specs, full_ratio = 1.0, crs = sf::st_crs
 
 #' Set Last Inset Configuration
 #'
-#' Stores an inset configuration object for later use with [with_inset()].
-#' This is typically called internally by [config_insetmap()].
+#' Stores an inset configuration object in a private environment for later retrieval.
+#' This function is typically called internally by [config_insetmap()] and is rarely
+#' used directly by end users.
 #'
-#' @param insetcfg An inset configuration object of class "insetcfg".
+#' @param insetcfg An inset configuration object of class "insetcfg", typically
+#'   created by [config_insetmap()].
 #'
-#' @return NULL (called for side effects).
+#' @return NULL (invisibly). The function is called for its side effect of
+#'   storing the configuration.
+#'
+#' @details
+#' The stored configuration can later be retrieved using [last_insetcfg()].
+#' This mechanism allows [with_inset()] to work without explicitly passing
+#' the configuration if [config_insetmap()] has been called previously.
+#'
 #' @keywords internal
+#' @seealso [last_insetcfg()], [config_insetmap()]
 set_last_insetcfg <- function(insetcfg) .cfg_store$set(insetcfg)
 
 #' Get Last Inset Configuration

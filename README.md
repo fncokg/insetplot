@@ -3,118 +3,143 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-`insetplot` provides tools for creating inset plots and maps with spatial data. **Migrate from normal ggplot2 mapping to inset plots with minimal code changes** - just wrap your existing plotting code!
+`insetplot` provides tools for creating inset plots and maps with spatial data. **Compose maps with proper aspect ratios** - the automatic kind, not the guessed kind!
 
-## ⚡ Quick Migration Example
+## ⚡ Quick Start: Two Approaches
 
-**Before (normal ggplot):**
-```r
-ggplot(spatial_data) +
-  geom_sf(aes(fill = population)) +
-  theme_void()
-```
+### Approach 1: Reuse Plot Code (Minimal Setup)
 
-**After (with insets):**
-```r
-# 1. Configure insets once
-config_insetmap(
-  plot_data = spatial_data,
-  specs = list(
-    plot_spec(main = TRUE),
-    plot_spec(xmin = -10, xmax = 30, ymin = 35, ymax = 70,
-              loc_left = 0.7, loc_bottom = 0.7, width = 0.3)
-  )
-)
-
-# 2. Wrap your SAME plotting code
-with_inset({
-  ggplot(spatial_data) +
-    geom_sf(aes(fill = population)) +
-    theme_void()
-})
-```
-
-**That's it!** Your plotting code remains unchanged - just configuration and wrapping.
-
-## Installation
-
-You can install the development version of insetplot from GitHub with:
-
-``` r
-# install.packages("devtools")
-devtools::install_github("fncokg/insetplot")
-```
-
-## Features
-
-- **🚀 Minimal Migration**: Wrap existing ggplot2 code - no need to rewrite plotting logic
-- **📍 Flexible positioning**: Define multiple plot areas with custom bounding boxes and positioning
-- **🎯 Automatic aspect ratio handling**: Maintains proper proportions for geographic data
-
-## Basic Usage
-
-Here's a simple example of how to create an inset map:
+Same plot for main and all insets - let `insetplot` handle sizing:
 
 ```r
 library(insetplot)
 library(sf)
 library(ggplot2)
 
-# Load spatial data
-nc <- sf::st_read(system.file("shape/nc.shp", package="sf"))
+nc <- st_read(system.file("shape/nc.shp", package = "sf"))
 
-# Configure the inset map
+# Configure insets
 config_insetmap(
-  plot_data = nc,
+  data_list = list(nc),
   specs = list(
-    # Main plot (full extent)
-    plot_spec(main = TRUE),
-    
-    # Inset plot (zoomed region)
-    plot_spec(
-      xmin = -84, xmax = -75, ymin = 33, ymax = 37,  # Bounding box
-      loc_left = 0.7, loc_bottom = 0.7,              # Position in main plot
-      width = 0.3                                    # Size of inset
+    inset_spec(main = TRUE),
+    inset_spec(
+      xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+      loc = "left bottom", width = 0.3
     )
-  )
+  ),
+  full_ratio = 16 / 9
 )
 
-# Create the combined plot
+# Reuse the same plot code
 with_inset({
-  ggplot(nc) +
-    geom_sf(aes(fill = AREA)) +
+  ggplot(nc, aes(fill = AREA)) +
+    geom_sf() +
     scale_fill_viridis_c() +
     theme_void()
 })
 ```
 
-## Advanced Usage
+### Approach 2: Customize Each Subplot
 
-### Multiple Insets
+Define unique plots for main and insets:
 
-You can create multiple insets in a single plot:
+```r
+base_map <- ggplot(nc, aes(fill = AREA)) +
+  geom_sf() + scale_fill_viridis_c() + theme_void()
+
+inset_map <- ggplot(nc, aes(fill = AREA)) +
+  geom_sf() + scale_fill_viridis_c() +
+  theme_void() + theme(legend.position = "none")
+
+# Configure with custom plots
+config_insetmap(
+  data_list = list(nc),
+  specs = list(
+    inset_spec(main = TRUE, plot = base_map),
+    inset_spec(
+      xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+      loc = "left bottom", width = 0.3,
+      plot = inset_map
+    )
+  ),
+  full_ratio = 16 / 9
+)
+
+# Call with_inset() without plot parameter
+with_inset()
+```
+
+## Installation
+
+You can install the development version from GitHub:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("fncokg/insetplot")
+```
+
+## Why insetplot?
+
+### ✅ Correct Aspect Ratios
+
+`insetplot` **computes aspect ratios from your data**, not guesses. Compare:
+
+```r
+# ❌ Direct cowplot (manual, often wrong):
+ggdraw(main) + draw_plot(inset, x = 0.1, y = 0.1, width = 0.3, height = 0.25)
+# You guessed width/height ratio matches the data? Probably not.
+
+# ✅ insetplot (automatic, always right):
+config_insetmap(data_list = list(nc), specs = list(...), full_ratio = 16/9)
+with_inset(plot)
+# Aspect ratio = data extent / canvas ratio. Math works.
+```
+
+See the vignette for a detailed comparison with examples.
+
+## Key Features
+
+- **🎯 Automatic aspect ratio handling**: Based on data bounding boxes and canvas ratio
+- **📍 Flexible positioning**: Corners (e.g., `"left bottom"`) or custom coordinates
+- **🎨 Customizable**: Same plot for all subplots OR unique plots per subplot
+- **🔧 Scale factor support**: Size insets relative to data extent with `scale_factor`
+- **🎁 Convenience features**: Border styling, CRS transformations, subtitle support
+
+## Main Functions
+
+- `inset_spec()`: Define spatial extent and positioning for each subplot
+- `config_insetmap()`: Create an inset configuration from your data
+- `with_inset()`: Compose the final plot
+- `last_insetcfg()`: Retrieve the most recent configuration
+- `map_border()`: Add subtle borders around insets
+
+## Examples
+
+### Multiple Insets with Scale Factors
 
 ```r
 config_insetmap(
-  plot_data = world_data,
+  data_list = list(nc),
   specs = list(
-    plot_spec(main = TRUE),
-    plot_spec(xmin = -10, xmax = 30, ymin = 35, ymax = 70, 
-              loc_left = 0.02, loc_bottom = 0.7, width = 0.3),
-    plot_spec(xmin = -180, xmax = -120, ymin = 55, ymax = 75,
-              loc_left = 0.02, loc_bottom = 0.02, width = 0.25)
-  )
+    inset_spec(main = TRUE),
+    inset_spec(xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+               loc = "left bottom", scale_factor = 0.5),
+    inset_spec(xmin = -81, xmax = -72, ymin = 34, ymax = 36,
+               loc = "right top", scale_factor = 0.4)
+  ),
+  full_ratio = 16 / 9,
+  border_args = list(color = "red", linewidth = 1.5)
 )
+
+with_inset(ggplot(nc, aes(fill = AREA)) + geom_sf() + theme_void())
 ```
 
-### Automatic Sizing
+## Learn More
 
-Use `no_scale = TRUE` to automatically determine inset size to keep the aspect ratio consistent with the main plot:
+Read the vignette for a detailed comparison with `cowplot` and examples:
 
 ```r
-plot_spec(
-  xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-  loc_left = 0.7, loc_bottom = 0.7,
-  no_scale = TRUE
-)
+vignette("insetplot-intro", package = "insetplot")
 ```
+

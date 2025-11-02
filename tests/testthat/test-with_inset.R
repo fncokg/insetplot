@@ -137,3 +137,22 @@ test_that("with_inset plot parameter is truly optional when all specs have plots
     result_with_plot <- with_inset(plot = create_base_ggplot(data))
     expect_is(result_with_plot, "ggplot")
 })
+
+test_that("with_inset returns correct structure when .return_details = TRUE", {
+    data <- setup_base_plot()
+    base_plot <- create_base_ggplot(data)
+    setup_inset_config(data_list = list(data))
+
+    # Test that .return_details = TRUE returns a list with expected elements
+    result <- with_inset(plot = base_plot, .return_details = TRUE)
+
+    expect_is(result, "list")
+    expect_true("full" %in% names(result))
+    expect_true("subplots" %in% names(result))
+    expect_true("subplot_layouts" %in% names(result))
+    expect_true("main_ratio" %in% names(result))
+
+    expect_is(result$full, "ggplot")
+    expect_is(result$subplots, "list")
+    expect_is(result$main_ratio, "numeric")
+})

@@ -8,29 +8,32 @@ with_inset(
   plot = NULL,
   .cfg = last_insetcfg(),
   .as_is = FALSE,
-  .return_subplots = FALSE
+  .return_details = FALSE
 )
 }
 \arguments{
 \item{plot}{Optional. A ggplot object used as the default for each subplot
-(unless a specific spec provides its own \code{plot}). If NULL and all specs have
-their own \code{plot} defined, this parameter is ignored. Default NULL.}
+(unless a specific spec provides its own \code{plot}). NOTE: you SHOULD NOT pass \code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} into this plot manually. The coordinate system is handled internally.
+If NULL and all specs have their own \code{plot} defined, this parameter is ignored. Default NULL.}
 
-\item{.cfg}{An inset configuration (class "insetcfg"), typically created by
+\item{.cfg}{An inset configuration (class "insetcfg") created by
 \code{\link[=config_insetmap]{config_insetmap()}}. Defaults to \code{\link[=last_insetcfg]{last_insetcfg()}} if NULL.}
 
 \item{.as_is}{Logical. If TRUE, return \code{plot} as-is without creating insets.
-Default FALSE. Requires \code{plot} to be non-NULL.}
+Useful when debugging or code reuse outside the inset workflow. Default FALSE.}
 
-\item{.return_subplots}{Logical. If FALSE (default), returns a combined plot
+\item{.return_details}{Logical. If FALSE (default), returns a combined plot
 using \code{\link[cowplot:ggdraw]{cowplot::ggdraw()}} with the main plot and inset layers. If TRUE,
 returns a list with: \item{full}{The combined plot} \item{subplots}{A list
 of individual ggplot objects for each subplot}.}
 }
 \value{
-If \code{.return_subplots = FALSE}, a ggplot object (via cowplot::ggdraw)
-containing the main plot plus inset layers. If TRUE, a list with elements
-\code{full} (the combined plot) and \code{subplots} (individual ggplot objects).
+If \code{.return_details = FALSE}, a ggplot object (via cowplot::ggdraw)
+containing the main plot plus inset layers. If TRUE, a list with elements:
+\item{full}{The combined plot}
+\item{subplots}{Individual ggplot objects for each subplot}
+\item{subplot_layouts}{Layout information (x, y, width, height) for each inset}
+\item{main_ratio}{Aspect ratio of the main plot}
 }
 \description{
 Build a combined plot using an inset configuration created by \code{\link[=config_insetmap]{config_insetmap()}}.

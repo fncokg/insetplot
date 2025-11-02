@@ -7,13 +7,24 @@
 set_last_insetcfg(insetcfg)
 }
 \arguments{
-\item{insetcfg}{An inset configuration object of class "insetcfg".}
+\item{insetcfg}{An inset configuration object of class "insetcfg", typically
+created by \code{\link[=config_insetmap]{config_insetmap()}}.}
 }
 \value{
-NULL (called for side effects).
+NULL (invisibly). The function is called for its side effect of
+storing the configuration.
 }
 \description{
-Stores an inset configuration object for later use with \code{\link[=with_inset]{with_inset()}}.
-This is typically called internally by \code{\link[=config_insetmap]{config_insetmap()}}.
+Stores an inset configuration object in a private environment for later retrieval.
+This function is typically called internally by \code{\link[=config_insetmap]{config_insetmap()}} and is rarely
+used directly by end users.
+}
+\details{
+The stored configuration can later be retrieved using \code{\link[=last_insetcfg]{last_insetcfg()}}.
+This mechanism allows \code{\link[=with_inset]{with_inset()}} to work without explicitly passing
+the configuration if \code{\link[=config_insetmap]{config_insetmap()}} has been called previously.
+}
+\seealso{
+\code{\link[=last_insetcfg]{last_insetcfg()}}, \code{\link[=config_insetmap]{config_insetmap()}}
 }
 \keyword{internal}

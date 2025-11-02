@@ -14,5 +14,7 @@ Imports:
     cowplot
 Suggests:
     testthat,
-URL: https://github.com/fncokg/insetplot
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 BugReports: https://github.com/fncokg/insetplot/issues

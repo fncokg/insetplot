@@ -33,25 +33,24 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #' via [ggplot2::coord_sf()] with the given bounding box. Non-main subplots receive
 #' a border from [map_border()].
 #'
-#' The argument `.as_is = TRUE` returns the input `plot` unchanged and does not
-#' require any configuration. This is convenient for reusing the same plotting
-#' code outside the inset workflow or for testing.
-#'
 #' @param plot Optional. A ggplot object used as the default for each subplot
-#'   (unless a specific spec provides its own `plot`). If NULL and all specs have
-#'   their own `plot` defined, this parameter is ignored. Default NULL.
-#' @param .cfg An inset configuration (class "insetcfg"), typically created by
+#'   (unless a specific spec provides its own `plot`). NOTE: you SHOULD NOT pass [ggplot2::coord_sf()] into this plot manually. The coordinate system is handled internally.
+#' If NULL and all specs have their own `plot` defined, this parameter is ignored. Default NULL.
+#' @param .cfg An inset configuration (class "insetcfg") created by
 #'   [config_insetmap()]. Defaults to [last_insetcfg()] if NULL.
 #' @param .as_is Logical. If TRUE, return `plot` as-is without creating insets.
-#'   Default FALSE. Requires `plot` to be non-NULL.
-#' @param .return_subplots Logical. If FALSE (default), returns a combined plot
+#'   Useful when debugging or code reuse outside the inset workflow. Default FALSE.
+#' @param .return_details Logical. If FALSE (default), returns a combined plot
 #'   using [cowplot::ggdraw()] with the main plot and inset layers. If TRUE,
 #'   returns a list with: \item{full}{The combined plot} \item{subplots}{A list
 #'   of individual ggplot objects for each subplot}.
 #'
-#' @return If `.return_subplots = FALSE`, a ggplot object (via cowplot::ggdraw)
-#'   containing the main plot plus inset layers. If TRUE, a list with elements
-#'   `full` (the combined plot) and `subplots` (individual ggplot objects).
+#' @return If `.return_details = FALSE`, a ggplot object (via cowplot::ggdraw)
+#'   containing the main plot plus inset layers. If TRUE, a list with elements:
+#'   \item{full}{The combined plot}
+#'   \item{subplots}{Individual ggplot objects for each subplot}
+#'   \item{subplot_layouts}{Layout information (x, y, width, height) for each inset}
+#'   \item{main_ratio}{Aspect ratio of the main plot}
 #'
 #' @details
 #' - Bounding boxes come from each `inset_spec()` in `.cfg$specs`. Missing bbox
@@ -111,7 +110,7 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #'
 #' @seealso [config_insetmap()], [inset_spec()], [last_insetcfg()], [map_border()]
 #' @export
-with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .return_subplots = FALSE) {
+with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .return_details = FALSE) {
     if (.as_is) {
         return(plot)
     }
@@ -149,11 +148,11 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 
     # Now process the aspect ratio and sizes
 
-    main_data_bbox <- specs[[.cfg$main_idx]]$data_bbox
+    main_data_features <- get_bbox_features(specs[[.cfg$main_idx]]$data_bbox)
 
-    main_xrange <- main_data_bbox[["xmax"]] - main_data_bbox[["xmin"]]
-    main_yrange <- main_data_bbox[["ymax"]] - main_data_bbox[["ymin"]]
-    main_ratio <- main_xrange / main_yrange
+    main_xrange <- main_data_features$x_range
+    main_yrange <- main_data_features$y_range
+    main_ratio <- main_data_features$xy_ratio
     full_ratio <- .cfg$full_ratio
 
     # Determine whether main plot will be compressed
@@ -167,16 +166,18 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
         main_hr <- full_ratio / main_ratio
     }
 
+    subplot_layouts <- list()
     inset_plots <- lapply(seq_len(length(subplots)), function(i_inset) {
         gg <- subplots[[i_inset]]
         inset <- specs[[i_inset]]
         if (inset$main) {
+            subplot_layouts[[i_inset]] <- NULL
             return(NULL)
         }
-        inset_data_bbox <- inset$data_bbox
-        inset_xrange <- inset_data_bbox[["xmax"]] - inset_data_bbox[["xmin"]]
-        inset_yrange <- inset_data_bbox[["ymax"]] - inset_data_bbox[["ymin"]]
-        inset_ratio <- inset_xrange / inset_yrange
+        inset_data_features <- get_bbox_features(inset$data_bbox)
+        inset_xrange <- inset_data_features$x_range
+        inset_yrange <- inset_data_features$y_range
+        inset_ratio <- inset_data_features$xy_ratio
         real_inset_ratio <- inset_ratio / full_ratio
 
         # Determine width and height
@@ -215,28 +216,95 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
                 "top" = 1 - height - loc_offset
             )
         }
-        cowplot::draw_plot(
-            gg,
+        subplot_layouts[[i_inset]] <- list(
             x = loc_left,
             y = loc_bottom,
             width = width,
-            height = height,
-            # target plot is anchored at bottom-left if the specified width-height ratio does not match the real ratio
-            halign = 0,
-            valign = 0
+            height = height
+        )
+        return(
+            cowplot::draw_plot(
+                gg,
+                x = loc_left,
+                y = loc_bottom,
+                width = width,
+                height = height,
+                # target plot is anchored at bottom-left if the specified width-height ratio does not match the real ratio
+                halign = 0,
+                valign = 0
+            )
         )
     })
 
     map_full <- cowplot::ggdraw(subplots[[.cfg$main_idx]]) + inset_plots
-    if (.return_subplots) {
+    if (.return_details) {
         return(list(
             full = map_full,
-            subplots = subplots
+            subplots = subplots,
+            subplot_layouts = subplot_layouts,
+            main_ratio = main_ratio
         ))
     }
     return(map_full)
 }
 
+#' Save a composed inset plot with appropriate dimensions
+#'
+#' A wrapper around [ggplot2::ggsave()] that automatically calculates the output
+#' dimensions based on the full ratio defined in the inset configuration.
+#' This ensures the saved image maintains the correct aspect ratio for proper
+#' rendering of all subplots.
+#'
+#' All parameters are the same as [ggplot2::ggsave()], except that you only need to
+#' provide either `width` or `height`, and the other dimension will be calculated
+#' automatically to match the aspect ratio defined in the inset configuration.
+#'
+#' @param filename Filename to save the plot to. Passed directly to [ggplot2::ggsave()].
+#' @param plot The plot to save. Default [ggplot2::last_plot()].
+#' @param device Device to save to (e.g., "png", "pdf"). Default NULL (inferred from filename).
+#' @param path Directory path for saving. Default NULL (current directory).
+#' @param scale Scaling factor. Default 1.
+#' @param width Image width in inches. If NA (default), computed from `height` using
+#'   the inset configuration's `full_ratio`. If both are NA, defaults to 8 inches width.
+#' @param height Image height in inches. If NA (default), computed from `width` using
+#'   the inset configuration's `full_ratio`.
+#' @param ... Additional arguments passed to [ggplot2::ggsave()].
+#'
+#' @return NULL (invisibly). Saves the plot to disk.
+#'
+#' @details
+#' The function automatically calculates width and height based on `.cfg$full_ratio`
+#' to maintain aspect ratio consistency. If both width and height are provided,
+#' a warning is issued as the output aspect ratio may not match the configuration.
+#'
+#' @examples
+#' library(sf)
+#' library(ggplot2)
+#'
+#' nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
+#'
+#' config_insetmap(
+#'     data_list = list(nc),
+#'     specs = list(
+#'         inset_spec(main = TRUE),
+#'         inset_spec(
+#'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+#'             loc = "left bottom", width = 0.3
+#'         )
+#'     ),
+#'     full_ratio = 16 / 9
+#' )
+#'
+#' base <- ggplot(nc, aes(fill = AREA)) +
+#'     geom_sf() +
+#'     theme_void()
+#' plot_result <- with_inset(base)
+#'
+#' # Save with automatically calculated height
+#' # ggsave_inset("inset_map.png", width = 10)
+#'
+#' @seealso [with_inset()], [config_insetmap()]
+#' @export
 ggsave_inset <- function(filename, plot = last_plot(), device = NULL, path = NULL, scale = 1, width = NA, height = NA, ...) {
     .cfg <- last_insetcfg()
     ratio <- .cfg$full_ratio

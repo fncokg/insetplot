@@ -3,3 +3,7 @@ insetplot.Rproj
 CRAN-SUBMISSION
 cran-comments.md
 docs
+/doc/
+/Meta/
+vignettes/
+_pkgdown.yml
