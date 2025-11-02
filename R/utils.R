@@ -67,8 +67,8 @@ get_widest_bbox <- function(shapes) {
 #'
 #' @export
 get_bbox_features <- function(bbox) {
-    x_range <- bbox["xmax"] - bbox["xmin"]
-    y_range <- bbox["ymax"] - bbox["ymin"]
+    x_range <- bbox[["xmax"]] - bbox[["xmin"]]
+    y_range <- bbox[["ymax"]] - bbox[["ymin"]]
     xy_ratio <- x_range / y_range
     return(list(x_range = x_range, y_range = y_range, xy_ratio = xy_ratio))
 }

@@ -11,7 +11,7 @@ RoxygenNote: 7.3.2
 Imports:
     sf,
     ggplot2,
-    cowplot
+    patchwork,
 Suggests:
     testthat,
     knitr,

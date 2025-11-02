@@ -79,5 +79,5 @@
 #' @aliases insetplot
 #' @import ggplot2
 #' @import sf
-#' @import cowplot
+#' @import patchwork
 "_PACKAGE"

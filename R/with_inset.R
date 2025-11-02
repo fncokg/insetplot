@@ -41,12 +41,11 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #' @param .as_is Logical. If TRUE, return `plot` as-is without creating insets.
 #'   Useful when debugging or code reuse outside the inset workflow. Default FALSE.
 #' @param .return_details Logical. If FALSE (default), returns a combined plot
-#'   using [cowplot::ggdraw()] with the main plot and inset layers. If TRUE,
+#'   with the main plot and inset layers. If TRUE,
 #'   returns a list with: \item{full}{The combined plot} \item{subplots}{A list
 #'   of individual ggplot objects for each subplot}.
 #'
-#' @return If `.return_details = FALSE`, a ggplot object (via cowplot::ggdraw)
-#'   containing the main plot plus inset layers. If TRUE, a list with elements:
+#' @return If `.return_details = FALSE`, a ggplot object containing the main plot plus inset layers. If TRUE, a list with elements:
 #'   \item{full}{The combined plot}
 #'   \item{subplots}{Individual ggplot objects for each subplot}
 #'   \item{subplot_layouts}{Layout information (x, y, width, height) for each inset}
@@ -64,8 +63,6 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #'     \item Otherwise, `width` and/or `height` from the spec are used. If one
 #'       is NA, it is computed from the other using the inset's aspect ratio.
 #'   }
-#' - Non-main insets are positioned using `cowplot::draw_plot()` with
-#'   `halign = 0, valign = 0` (anchored at bottom-left).
 #' - Best results are achieved when the saved image width-to-height ratio equals
 #'   `.cfg$full_ratio`.
 #'
@@ -153,55 +150,38 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
     main_xrange <- main_data_features$x_range
     main_yrange <- main_data_features$y_range
     main_ratio <- main_data_features$xy_ratio
-    full_ratio <- .cfg$full_ratio
 
-    # Determine whether main plot will be compressed
-    main_wr <- 1.0
-    main_hr <- 1.0
-    if (full_ratio > main_ratio) {
-        # full is wider
-        main_wr <- main_ratio / full_ratio
-    } else if (full_ratio < main_ratio) {
-        # full is taller
-        main_hr <- full_ratio / main_ratio
-    }
-
-    subplot_layouts <- list()
-    inset_plots <- lapply(seq_len(length(subplots)), function(i_inset) {
-        gg <- subplots[[i_inset]]
+    subplot_layouts <- lapply(seq_len(length(subplots)), function(i_inset) {
         inset <- specs[[i_inset]]
         if (inset$main) {
-            subplot_layouts[[i_inset]] <- NULL
             return(NULL)
         }
+        # Determine width and height
         inset_data_features <- get_bbox_features(inset$data_bbox)
         inset_xrange <- inset_data_features$x_range
         inset_yrange <- inset_data_features$y_range
-        inset_ratio <- inset_data_features$xy_ratio
-        real_inset_ratio <- inset_ratio / full_ratio
-
-        # Determine width and height
         width <- inset$width
         height <- inset$height
+
         if (!is.na(inset$scale_factor)) {
             # Automatically derive width/height based on scale factor, overriding user defined values
-
-            width <- (inset_xrange / main_xrange) * main_wr * inset$scale_factor
-            height <- (inset_yrange / main_yrange) * main_hr * inset$scale_factor
+            width <- (inset_xrange / main_xrange) * inset$scale_factor
+            height <- (inset_yrange / main_yrange) * inset$scale_factor
         } else {
+            inset_ratio <- (inset_xrange / main_xrange) / (inset_yrange / main_yrange)
             # In this case, at least one of width/height is provided by the user
             if (is.na(width)) {
-                width <- height * real_inset_ratio
+                width <- height * inset_ratio
             }
             if (is.na(height)) {
-                height <- width / real_inset_ratio
+                height <- width / inset_ratio
             }
         }
 
         # Determine left and bottom positions
         loc_left <- inset$loc_left
         loc_bottom <- inset$loc_bottom
-        loc_offset <- 0.02
+        loc_offset <- 0
         if (is.na(loc_left)) {
             loc_left <- switch(inset$hpos,
                 "left" = 0 + loc_offset,
@@ -216,27 +196,33 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
                 "top" = 1 - height - loc_offset
             )
         }
-        subplot_layouts[[i_inset]] <- list(
+        list(
             x = loc_left,
             y = loc_bottom,
             width = width,
             height = height
         )
-        return(
-            cowplot::draw_plot(
-                gg,
-                x = loc_left,
-                y = loc_bottom,
-                width = width,
-                height = height,
-                # target plot is anchored at bottom-left if the specified width-height ratio does not match the real ratio
-                halign = 0,
-                valign = 0
-            )
+    })
+
+    inset_plots <- lapply(seq_len(length(subplots)), function(i_inset) {
+        if (specs[[i_inset]]$main) {
+            return(NULL)
+        }
+        layout <- subplot_layouts[[i_inset]]
+        patchwork::inset_element(
+            subplots[[i_inset]],
+            left = layout$x,
+            bottom = layout$y,
+            right = layout$width + layout$x,
+            top = layout$height + layout$y,
+            align_to = "panel",
+            on_top = TRUE,
+            ignore_tag = TRUE,
+            clip = FALSE
         )
     })
 
-    map_full <- cowplot::ggdraw(subplots[[.cfg$main_idx]]) + inset_plots
+    map_full <- subplots[[.cfg$main_idx]] + inset_plots
     if (.return_details) {
         return(list(
             full = map_full,
