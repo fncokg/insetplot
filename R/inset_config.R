@@ -157,16 +157,13 @@ inset_spec <- function(
 #'
 #' @seealso [inset_spec()], [with_inset()], [last_insetcfg()]
 #' @export
-config_insetmap <- function(data_list, specs, full_ratio = 1.0, crs = sf::st_crs("EPSG:4326"), border_args = list()) {
+config_insetmap <- function(data_list, specs, crs = sf::st_crs("EPSG:4326"), border_args = list()) {
     # Input validation
     if (missing(data_list) || length(data_list) == 0 || !all(sapply(data_list, function(x) inherits(x, "sf")))) {
         stop("data_list must be provided, and all elements must be of class 'sf'")
     }
     if (!is.list(specs) || length(specs) == 0) {
         stop("specs must be a non-empty list of inset_spec objects")
-    }
-    if (full_ratio <= 0) {
-        stop("full_ratio must be positive")
     }
 
     # Check that exactly one spec has main = TRUE
@@ -179,6 +176,7 @@ config_insetmap <- function(data_list, specs, full_ratio = 1.0, crs = sf::st_crs
 
     from_crs <- st_crs(data_list[[1]])
     widest_bbox <- get_widest_bbox(data_list)
+    main_ratio <- get_bbox_features(widest_bbox)$xy_ratio
     main_idx <- NULL
     for (i in seq_along(specs)) {
         spec <- specs[[i]]
@@ -199,9 +197,9 @@ config_insetmap <- function(data_list, specs, full_ratio = 1.0, crs = sf::st_crs
             data_list = data_list,
             specs = specs,
             main_idx = main_idx,
-            full_ratio = full_ratio,
             from_crs = from_crs,
             to_crs = crs,
+            main_ratio = main_ratio,
             border_args = utils::modifyList(
                 list(
                     color = "black",

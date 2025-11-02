@@ -293,7 +293,7 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #' @export
 ggsave_inset <- function(filename, plot = last_plot(), device = NULL, path = NULL, scale = 1, width = NA, height = NA, ...) {
     .cfg <- last_insetcfg()
-    ratio <- .cfg$full_ratio
+    ratio <- .cfg$main_ratio
     if (is.na(width) && is.na(height)) {
         width <- 8
         height <- width / ratio
