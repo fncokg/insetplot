@@ -12,7 +12,9 @@ ggsave_inset(
   scale = 1,
   width = NA,
   height = NA,
-  ...
+  ...,
+  ratio_scale = 1,
+  .cfg = last_insetcfg()
 )
 }
 \arguments{
@@ -26,13 +28,16 @@ ggsave_inset(
 
 \item{scale}{Scaling factor. Default 1.}
 
-\item{width}{Image width in inches. If NA (default), computed from \code{height} using
-the inset configuration's \code{full_ratio}. If both are NA, defaults to 8 inches width.}
-
-\item{height}{Image height in inches. If NA (default), computed from \code{width} using
-the inset configuration's \code{full_ratio}.}
+\item{width, }{height Width and height in inches. You only need to provide one; the other
+will be calculated automatically. Default NA.}
 
 \item{...}{Additional arguments passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}.}
+
+\item{ratio_scale}{Optional scaling factor to adjust the aspect ratio. Default 1.0. Use when
+there are extra elements (e.g., titles, legends) that affect the overall image dimensions.
+For example, set to 1.1 for extra width when a legend is present on the left/right side.}
+
+\item{.cfg}{An inset configuration (class \code{insetcfg}) created by \code{\link[=config_insetmap]{config_insetmap()}}.}
 }
 \value{
 NULL (invisibly). Saves the plot to disk.
@@ -48,7 +53,7 @@ All parameters are the same as \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}, 
 provide either \code{width} or \code{height}, and the other dimension will be calculated
 automatically to match the aspect ratio defined in the inset configuration.
 
-The function automatically calculates width and height based on \code{.cfg$full_ratio}
+The function automatically calculates width and height based on \code{.cfg$main_ratio}
 to maintain aspect ratio consistency. If both width and height are provided,
 a warning is issued as the output aspect ratio may not match the configuration.
 }
@@ -66,19 +71,18 @@ config_insetmap(
             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
             loc = "left bottom", width = 0.3
         )
-    ),
-    full_ratio = 16 / 9
+    )
 )
 
 base <- ggplot(nc, aes(fill = AREA)) +
     geom_sf() +
     theme_void()
-plot_result <- with_inset(base)
+with_inset(base)
 
 # Save with automatically calculated height
-# ggsave_inset("inset_map.png", width = 10)
+ggsave_inset("inset_map.png", width = 10)
 
 }
 \seealso{
-\code{\link[=with_inset]{with_inset()}}, \code{\link[=config_insetmap]{config_insetmap()}}
+\code{\link[=with_inset]{with_inset()}}
 }

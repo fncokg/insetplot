@@ -30,6 +30,3 @@ ggplot(mtcars, aes(mpg, wt)) +
     map_border(color = "red", linewidth = 2)
 
 }
-\seealso{
-\code{\link[=with_inset]{with_inset()}}
-}

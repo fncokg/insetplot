@@ -7,13 +7,11 @@
     return(bbox)
 }
 
-#' Compute the union of multiple bounding boxes
+#' Compute the union bounding box from multiple shapes
 #'
-#' Combines multiple bounding boxes (from sf objects) into a single bounding box
-#' that encompasses all of them. Useful for determining the overall extent of
-#' spatial data across multiple layers.
+#' Calculates the overall bounding box that encompasses all provided spatial shapes.
 #'
-#' @param shapes A list of sf objects or a data object with bounding box information.
+#' @param shapes A list of sf objects.
 #'
 #' @return A named numeric vector with elements: `ymin`, `xmin`, `xmax`, `ymax`
 #'   representing the union of all input bounding boxes.
@@ -42,8 +40,6 @@ get_widest_bbox <- function(shapes) {
 #' Extract width, height, and aspect ratio from a bounding box
 #'
 #' Computes spatial range and aspect ratio metrics from a bounding box.
-#' These metrics are used internally for sizing insets and determining
-#' spatial transformations.
 #'
 #' @param bbox A named numeric vector with elements `xmin`, `xmax`, `ymin`, `ymax`.
 #'

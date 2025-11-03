@@ -17,7 +17,6 @@
 #'     geom_point() +
 #'     map_border(color = "red", linewidth = 2)
 #'
-#' @seealso [with_inset()]
 #' @export
 map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
     return(ggplot2::theme(
@@ -31,40 +30,30 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #' For each plot specification in the configuration, the function either uses the
 #' provided `spec$plot` or the supplied `plot` parameter and adds spatial coordinates
 #' via [ggplot2::coord_sf()] with the given bounding box. Non-main subplots receive
-#' a border from [map_border()].
+#' a border from [map_border()]. Insets are composed using [patchwork::inset_element()].
 #'
-#' @param plot Optional. A ggplot object used as the default for each subplot
-#'   (unless a specific spec provides its own `plot`). NOTE: you SHOULD NOT pass [ggplot2::coord_sf()] into this plot manually. The coordinate system is handled internally.
-#' If NULL and all specs have their own `plot` defined, this parameter is ignored. Default NULL.
+#' @param plot Optional. Either:
+#'   \itemize{
+#'     \item A single ggplot object to use as the base plot for all subplots (unless a spec has its own plot)
+#'     \item A list of ggplot objects matching the length of `.cfg$specs`, where each element
+#'       corresponds to a subplot in the configuration.
+#'     \item NULL if all specs have their own plot defined (plot is fully optional in this case)
+#'   }
+#'   NOTE: you SHOULD NOT pass [ggplot2::coord_sf()] into this plot manually. The coordinate system is handled internally.
+#'   Default NULL.
 #' @param .cfg An inset configuration (class "insetcfg") created by
-#'   [config_insetmap()]. Defaults to [last_insetcfg()] if NULL.
+#'   [config_insetmap()]. Defaults to [last_insetcfg()].
 #' @param .as_is Logical. If TRUE, return `plot` as-is without creating insets.
 #'   Useful when debugging or code reuse outside the inset workflow. Default FALSE.
 #' @param .return_details Logical. If FALSE (default), returns a combined plot
 #'   with the main plot and inset layers. If TRUE,
-#'   returns a list with: \item{full}{The combined plot} \item{subplots}{A list
-#'   of individual ggplot objects for each subplot}.
+#'   returns a list. See 'Value' section for details.
 #'
 #' @return If `.return_details = FALSE`, a ggplot object containing the main plot plus inset layers. If TRUE, a list with elements:
 #'   \item{full}{The combined plot}
 #'   \item{subplots}{Individual ggplot objects for each subplot}
-#'   \item{subplot_layouts}{Layout information (x, y, width, height) for each inset}
-#'   \item{main_ratio}{Aspect ratio of the main plot}
-#'
-#' @details
-#' - Bounding boxes come from each `inset_spec()` in `.cfg$specs`. Missing bbox
-#'   values are filled using the overall extent from cropped data in the configuration.
-#' - Each subplot receives coordinate system transformation via `coord_sf()` using
-#'   `default_crs = .cfg$from_crs`, `crs = .cfg$to_crs`, and the spec's bbox.
-#' - Inset sizes are determined by:
-#'   \itemize{
-#'     \item If `spec$scale_factor` is not NA, width/height are derived from
-#'       spatial ranges relative to the main plot multiplied by scale_factor.
-#'     \item Otherwise, `width` and/or `height` from the spec are used. If one
-#'       is NA, it is computed from the other using the inset's aspect ratio.
-#'   }
-#' - Best results are achieved when the saved image width-to-height ratio equals
-#'   `.cfg$full_ratio`.
+#'   \item{subplot_layouts}{A `list` of layout information (`x`, `y`, `width`, `height`) for each inset}
+#'   \item{main_ratio}{Width-to-height ratio of the main plot's data extent}
 #'
 #' @examples
 #' library(sf)
@@ -78,10 +67,9 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #'         inset_spec(main = TRUE),
 #'         inset_spec(
 #'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc = "left bottom", width = 0.3
+#'             loc = "left bottom", scale_factor = 0.5
 #'         )
-#'     ),
-#'     full_ratio = 16 / 9
+#'     )
 #' )
 #'
 #' # Supply base plot for all subplots
@@ -97,15 +85,14 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #'         inset_spec(main = TRUE, plot = base),
 #'         inset_spec(
 #'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc = "left bottom", width = 0.3,
+#'             loc = "left bottom", scale_factor = 0.5,
 #'             plot = base # Each spec has its own plot
 #'         )
-#'     ),
-#'     full_ratio = 16 / 9
+#'     )
 #' )
-#' with_inset() # plot parameter is optional
+#' with_inset() # plot parameter is optional now
 #'
-#' @seealso [config_insetmap()], [inset_spec()], [last_insetcfg()], [map_border()]
+#' @seealso [config_insetmap()]
 #' @export
 with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .return_details = FALSE) {
     if (.as_is) {
@@ -118,6 +105,14 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
     }
 
     specs <- .cfg$specs
+
+    if (!inherits(plot, "gg") && inherits(plot, "list")) {
+        stopifnot(length(plot) == length(specs))
+        for (i in seq_along(specs)) {
+            stopifnot(!is.null(plot[[i]]))
+            specs[[i]]$plot <- plot[[i]]
+        }
+    }
 
     # Create each subplot, and do coordinate transformation here
     subplots <- lapply(seq_len(length(specs)), function(i) {
@@ -250,16 +245,18 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #' @param device Device to save to (e.g., "png", "pdf"). Default NULL (inferred from filename).
 #' @param path Directory path for saving. Default NULL (current directory).
 #' @param scale Scaling factor. Default 1.
-#' @param width Image width in inches. If NA (default), computed from `height` using
-#'   the inset configuration's `full_ratio`. If both are NA, defaults to 8 inches width.
-#' @param height Image height in inches. If NA (default), computed from `width` using
-#'   the inset configuration's `full_ratio`.
+#' @param width, height Width and height in inches. You only need to provide one; the other
+#'   will be calculated automatically. Default NA.
 #' @param ... Additional arguments passed to [ggplot2::ggsave()].
+#' @param ratio_scale Optional scaling factor to adjust the aspect ratio. Default 1.0. Use when
+#'   there are extra elements (e.g., titles, legends) that affect the overall image dimensions.
+#'   For example, set to 1.1 for extra width when a legend is present on the left/right side.
+#' @param .cfg An inset configuration (class `insetcfg`) created by [config_insetmap()].
 #'
 #' @return NULL (invisibly). Saves the plot to disk.
 #'
 #' @details
-#' The function automatically calculates width and height based on `.cfg$full_ratio`
+#' The function automatically calculates width and height based on `.cfg$main_ratio`
 #' to maintain aspect ratio consistency. If both width and height are provided,
 #' a warning is issued as the output aspect ratio may not match the configuration.
 #'
@@ -277,23 +274,21 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
 #'             loc = "left bottom", width = 0.3
 #'         )
-#'     ),
-#'     full_ratio = 16 / 9
+#'     )
 #' )
 #'
 #' base <- ggplot(nc, aes(fill = AREA)) +
 #'     geom_sf() +
 #'     theme_void()
-#' plot_result <- with_inset(base)
+#' with_inset(base)
 #'
 #' # Save with automatically calculated height
-#' # ggsave_inset("inset_map.png", width = 10)
+#' ggsave_inset("inset_map.png", width = 10)
 #'
-#' @seealso [with_inset()], [config_insetmap()]
+#' @seealso [with_inset()]
 #' @export
-ggsave_inset <- function(filename, plot = last_plot(), device = NULL, path = NULL, scale = 1, width = NA, height = NA, ...) {
-    .cfg <- last_insetcfg()
-    ratio <- .cfg$main_ratio
+ggsave_inset <- function(filename, plot = last_plot(), device = NULL, path = NULL, scale = 1, width = NA, height = NA, ..., ratio_scale = 1.0, .cfg = last_insetcfg()) {
+    ratio <- .cfg$main_ratio * ratio_scale
     if (is.na(width) && is.na(height)) {
         width <- 8
         height <- width / ratio

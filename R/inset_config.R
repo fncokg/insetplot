@@ -2,46 +2,50 @@
 #'
 #' Define the spatial extent and positioning for each subplot (main or inset).
 #'
-#' @param xmin,xmax,ymin,ymax Numeric bbox coordinates for the subplot. Any may
+#' @param xmin,xmax,ymin,ymax Numeric bbox coordinates for the subplot in the
+#'   coordinate system of the data, normally longitude/latitude. Any may
 #'   be NA and will be inferred from the overall extent if possible.
-#' @param loc A convenience string like "left bottom", "center top", or
-#'   "right center". When supplied, it overrides `loc_left`/`loc_bottom` with
-#'   predefined anchor positions close to the plot edges (with small margins).
-#'   Default "right bottom".
+#' @param loc A convenience string like "left bottom", "center top", etc. to specify
+#'  the position of the inset on the full canvas. Horizontal position must be one of
+#'  "left", "center", or "right"; vertical position must be one of "bottom", "center", or "top".
+#'  Ignored when `loc_left` and `loc_bottom` are provided.
 #' @param loc_left,loc_bottom Numbers in \[0, 1\] for the bottom-left position of
-#'   the inset on the full canvas. Ignored when `main = TRUE`.
-#' @param width,height Optional size of the inset as a fraction of canvas width/
-#'   height. Supplying both is allowed but not recommended; aspect ratio will be
-#'   prioritized. If both are NA and `scale_factor` is NA, `scale_factor` is
-#'   set to 1.0 with a warning.
-#' @param scale_factor Numeric. If not NA, the inset's width/height are
+#'   the inset on the full canvas.
+#' @param width,height Numeric values in (0, 1\] for the size of the inset.
+#'   It is recommended to provide only one of these; the other dimension will be
+#'   inferred to maintain the aspect ratio of the spatial extent. It is also
+#'   recommended to use `scale_factor` to automatically size the inset relative to
+#'   the main plot instead of specifying width/height directly.
+#' @param scale_factor Numeric value in (0, 1\] indicating the scale of the inset
+#'   relative to the main plot. If not NA, the inset's width/height are
 #'   automatically derived from the spatial ranges relative to the main plot
-#'   multiplied by this factor. When specified, `width` and `height` are ignored.
-#'   See [with_inset()] for details.
+#'   multiplied by this factor. For example, the scale of the main plot is 1:10,000,
+#'   the inset's dimensions will be 1:20,000 if `scale_factor` is 0.5.
 #' @param main Logical. TRUE marks this spec as the main plot (exactly one).
 #'   Default FALSE.
 #' @param plot Optional ggplot object to use for this spec instead of the base
 #'   plot passed to [with_inset()].
 #'
 #' @return A list with elements `bbox`, `loc_left`, `loc_bottom`, `width`,
-#'   `height`, `scale_factor`, `main`, `plot`, `hpos`, and `vpos`.
+#'   `height`, `scale_factor`, `main`, `plot`, `hpos`, and `vpos`. You do not
+#'  normally need to interact with this object directly; it is used internally.
 #'
 #' @examples
-#' # Create a main plot specification
-#' main_spec <- inset_spec(main = TRUE)
-#'
-#' # Create an inset plot specification with explicit dimensions
-#' inset_spec_dim <- inset_spec(
-#'     xmin = -120, xmax = -100, ymin = 30, ymax = 50,
-#'     loc = "right bottom",
-#'     width = 0.3
-#' )
-#'
-#' # Create an inset with scale factor
-#' inset_spec_scaled <- inset_spec(
-#'     xmin = -120, xmax = -100, ymin = 30, ymax = 50,
-#'     loc = "left bottom",
-#'     scale_factor = 0.5
+#' specs <- list(
+#'     # Create a main plot specification
+#'     inset_spec(main = TRUE),
+#'     # Create an inset plot specification with explicit dimensions
+#'     inset_spec(
+#'         xmin = -120, xmax = -100, ymin = 30, ymax = 50,
+#'         loc = "right bottom",
+#'         width = 0.3
+#'     ),
+#'     # Create an inset with scale factor
+#'     inset_spec(
+#'         xmin = -120, xmax = -100, ymin = 30, ymax = 50,
+#'         loc = "left bottom",
+#'         scale_factor = 0.5
+#'     )
 #' )
 #'
 #' @export
@@ -113,30 +117,21 @@ inset_spec <- function(
 #' Configure inset map settings
 #'
 #' Create and store an inset configuration used by [with_inset()]. The
-#' configuration contains subplot specifications, aspect ratio of the full
-#' canvas, CRS settings, and border appearance for insets.
+#' configuration contains subplot specifications, aspect ratio of the main plot,
+#' CRS settings, and border appearance for insets.
 #'
-#' @param data_list A list of spatial data objects (sf class). All elements
-#'   must inherit from 'sf'. These data are used to compute the overall
+#' @param data_list A list of spatial data objects (sf class). These data are used to compute the overall
 #'   bounding box and coordinate systems for the insets.
 #' @param specs A non-empty list of [inset_spec()] objects.
 #' @param full_ratio Numeric width-to-height ratio of the full canvas. For best
 #'   results, save figures with this ratio. Default 1.
 #' @param crs Coordinate reference system to transform to, passed to
-#'   [ggplot2::coord_sf()] as `crs`. The CRS of the first sf object in
-#'   `data_list` is used as `default_crs` (from_crs). Default EPSG:4326.
-#' @param border_args A list merged into defaults for [map_border()] arguments
+#'   [ggplot2::coord_sf()] as `crs`. Default `"EPSG:4326"`.
+#' @param border_args A list of named arguments passed to [map_border()] to style the
+#'   borders around inset plots. See [map_border()] for details
 #'   (defaults: `color = "black"`, `linewidth = 1`).
 #'
-#' @return Invisibly, an object of class "insetcfg" with fields: `data_list`,
-#'   `specs`, `main_idx`, `full_ratio`, `from_crs`, `to_crs`, and `border_args`.
-#'   It is also stored as the last configuration, retrievable via [last_insetcfg()].
-#'
-#' @details
-#' Each spec in `specs` must have its bbox filled in (missing NA values are
-#' replaced with the overall extent). The `data_bbox` for each spec is computed
-#' by cropping the data in `data_list` to the spec's bbox and transforming to
-#' the target CRS.
+#' @return An object of class `insetcfg`. Also stored as the last configuration, retrievable via [last_insetcfg()].
 #'
 #' @examples
 #' library(sf)
@@ -149,10 +144,9 @@ inset_spec <- function(
 #'         inset_spec(main = TRUE),
 #'         inset_spec(
 #'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc = "left bottom", width = 0.3
+#'             loc = "left bottom", scale_factor = 0.5
 #'         )
-#'     ),
-#'     full_ratio = 16 / 9
+#'     )
 #' )
 #'
 #' @seealso [inset_spec()], [with_inset()], [last_insetcfg()]
@@ -233,33 +227,14 @@ config_insetmap <- function(data_list, specs, crs = sf::st_crs("EPSG:4326"), bor
 
 .cfg_store <- .insetcfg_store()
 
-#' Set Last Inset Configuration
-#'
-#' Stores an inset configuration object in a private environment for later retrieval.
-#' This function is typically called internally by [config_insetmap()] and is rarely
-#' used directly by end users.
-#'
-#' @param insetcfg An inset configuration object of class "insetcfg", typically
-#'   created by [config_insetmap()].
-#'
-#' @return NULL (invisibly). The function is called for its side effect of
-#'   storing the configuration.
-#'
-#' @details
-#' The stored configuration can later be retrieved using [last_insetcfg()].
-#' This mechanism allows [with_inset()] to work without explicitly passing
-#' the configuration if [config_insetmap()] has been called previously.
-#'
-#' @keywords internal
-#' @seealso [last_insetcfg()], [config_insetmap()]
 set_last_insetcfg <- function(insetcfg) .cfg_store$set(insetcfg)
 
 #' Get Last Inset Configuration
 #'
-#' Retrieves the most recently stored inset configuration object.
+#' Retrieves the most recently created inset configuration object.
 #' This is used internally by [with_inset()] when no configuration is explicitly provided.
 #'
-#' @return An inset configuration object of class "insetcfg", or NULL if no
+#' @return An inset configuration object of class `insetcfg`, or NULL if no
 #'   configuration has been set.
 #'
 #' @examples

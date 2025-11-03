@@ -6,33 +6,36 @@
 \alias{insetplot}
 \title{insetplot: Compose ggplot2 maps with insets}
 \description{
-Utilities to compose a base ggplot with one or more inset maps using simple
+Utilities to compose a main ggplot with one or more inset maps using simple
 spatial configuration. Define insets with bounding boxes, positions, and sizes,
-then reuse the same plotting code for all subplots.
+then reuse the same plotting code for all subplots. Insets are composed using
+patchwork's inset_element() for flexible layering over the main plot.
 }
 \section{Core workflow}{
 
 \enumerate{
-\item Use \code{\link{inset_spec}} to define spatial extents and positions
-for main and inset plots
-\item Use \code{\link{config_insetmap}} to create a reusable configuration
+\item Use \code{\link{inset_spec}} to define spatial extents, positions, and
+sizing for main and inset plots
+\item Use \code{\link{config_insetmap}} to create and store a reusable configuration
 from your spatial data and inset specifications
-\item Use \code{\link{with_inset}} to apply the configuration to a ggplot,
-automatically composing main and inset layers
+\item Use \code{\link{with_inset}} to compose the main and inset plots
+automatically with proper coordinate systems and borders
 }
 }
 
 \section{Main functions}{
 
 \itemize{
-\item \code{\link{inset_spec}}: Define spatial extent and positioning for
-each subplot (main or inset)
-\item \code{\link{config_insetmap}}: Create and store an inset map
-configuration with CRS and border settings
-\item \code{\link{with_inset}}: Compose a ggplot with configured insets
-using bounding boxes and aspect ratios
+\item \code{\link{inset_spec}}: Define spatial extent (bounding box),
+positioning (location or custom coordinates), and sizing (scale factor or
+explicit dimensions) for each subplot
+\item \code{\link{config_insetmap}}: Create and store an inset map configuration
+including data cropping, CRS transformations, and border settings
+\item \code{\link{with_inset}}: Compose the main and inset plots using
+patchwork, with automatic coordinate system handling via coord_sf()
 \item \code{\link{last_insetcfg}}: Retrieve the most recently created
 inset configuration
+\item \code{\link{ggsave_inset}}: Save composed plots with correct aspect ratio
 }
 }
 
@@ -40,6 +43,20 @@ inset configuration
 
 \itemize{
 \item \code{\link{map_border}}: Add a rectangular border around inset plots
+for visual separation
+}
+}
+
+\section{Configuration details}{
+
+\itemize{
+\item Inset specifications require exactly one main plot (main = TRUE)
+\item Missing bbox values are automatically filled using the overall spatial extent
+\item Each subplot's coordinate system is set via coord_sf() with CRS transformations
+\item Inset sizing can be determined by: (1) scale_factor (relative to main plot),
+or (2) explicit width/height values with automatic aspect ratio handling
+\item Non-main insets are positioned using patchwork::inset_element() with
+bottom-left anchor (halign = 0, valign = 0)
 }
 }
 
@@ -47,11 +64,34 @@ inset configuration
 
 \itemize{
 \item Keep ggplot2 plotting code unchanged; specify insets via configuration
-\item Automatic handling of aspect ratios, canvas proportions, and positions
-\item Support for scale factors and explicit width/height specifications
-\item Coordinate reference system (CRS) transformations via sf and ggplot2::coord_sf
-\item Borders and styling for inset plots to visually separate them
-\item Multiple insets with flexible positioning (corners, edges, or custom locations)
+\item Automatic spatial extent inference from data cropping
+\item Flexible sizing: scale factors, explicit dimensions, or aspect ratio-based computation
+\item Coordinate reference system (CRS) transformations via sf::st_transform() and ggplot2::coord_sf()
+\item Automatic borders and styling for insets
+\item Multiple insets with flexible positioning (corners, edges, or custom coordinates)
+\item Optional detailed output for debugging (.return_details = TRUE)
+\item As-is mode for code reuse outside inset workflow (.as_is = TRUE)
+}
+}
+
+\section{Plot composition}{
+
+The package uses patchwork's inset_element() for composing plots:
+\itemize{
+\item Main plot serves as the base layer
+\item Insets are overlaid on top using relative positioning (0-1 normalized coordinates)
+\item Each inset can have its own custom plot or use a shared base plot
+\item Spatial cropping and coordinate transformations are handled internally
+}
+}
+
+\section{Aspect ratio management}{
+
+For best results, the saved image aspect ratio should match the configuration:
+\itemize{
+\item main_ratio: Aspect ratio of the main plot's spatial extent
+\item full_ratio: Target width-to-height ratio for the entire composed figure
+\item Use ggsave_inset() to automatically calculate dimensions
 }
 }
 
@@ -63,9 +103,9 @@ library(ggplot2)
 library(insetplot)
 
 # Load spatial data
-nc <- st_read(system.file("shape/nc.shp", package = "sf"))
+nc <- st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
-# Configure insets: main plot + left-bottom inset
+# Option 1: Use a shared base plot for all subplots
 config_insetmap(
     data_list = list(nc),
     specs = list(
@@ -78,19 +118,37 @@ config_insetmap(
     full_ratio = 16 / 9
 )
 
-# Create base plot
 base_map <- ggplot(nc, aes(fill = AREA)) +
     geom_sf() +
     theme_void()
 
-# Compose with insets
-with_inset(base_map)
+result <- with_inset(base_map)
+
+# Option 2: Use custom plots for each subplot
+config_insetmap(
+    data_list = list(nc),
+    specs = list(
+        inset_spec(main = TRUE, plot = base_map),
+        inset_spec(
+            xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+            loc = "left bottom", width = 0.3,
+            plot = base_map + ggtitle("Detail")
+        )
+    ),
+    full_ratio = 16 / 9
+)
+
+result <- with_inset()  # plot parameter is optional
+
+# Save with proper aspect ratio
+ggsave_inset("map.png", result, width = 10)
 }
 }
 
 \seealso{
 \code{\link{inset_spec}}, \code{\link{config_insetmap}},
-\code{\link{with_inset}}, \code{\link{map_border}}
+\code{\link{with_inset}}, \code{\link{ggsave_inset}}, \code{\link{map_border}},
+\code{\link{last_insetcfg}}
 }
 \author{
 \strong{Maintainer}: Chao Kong \email{kongchao1998@gmail.com} (\href{https://orcid.org/0000-0002-6404-6142}{ORCID}) [copyright holder]

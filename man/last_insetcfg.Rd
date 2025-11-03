@@ -7,11 +7,11 @@
 last_insetcfg()
 }
 \value{
-An inset configuration object of class "insetcfg", or NULL if no
+An inset configuration object of class \code{insetcfg}, or NULL if no
 configuration has been set.
 }
 \description{
-Retrieves the most recently stored inset configuration object.
+Retrieves the most recently created inset configuration object.
 This is used internally by \code{\link[=with_inset]{with_inset()}} when no configuration is explicitly provided.
 }
 \examples{

@@ -20,26 +20,29 @@ inset_spec(
 )
 }
 \arguments{
-\item{xmin, xmax, ymin, ymax}{Numeric bbox coordinates for the subplot. Any may
+\item{xmin, xmax, ymin, ymax}{Numeric bbox coordinates for the subplot in the
+coordinate system of the data, normally longitude/latitude. Any may
 be NA and will be inferred from the overall extent if possible.}
 
-\item{loc}{A convenience string like "left bottom", "center top", or
-"right center". When supplied, it overrides \code{loc_left}/\code{loc_bottom} with
-predefined anchor positions close to the plot edges (with small margins).
-Default "right bottom".}
+\item{loc}{A convenience string like "left bottom", "center top", etc. to specify
+the position of the inset on the full canvas. Horizontal position must be one of
+"left", "center", or "right"; vertical position must be one of "bottom", "center", or "top".
+Ignored when \code{loc_left} and \code{loc_bottom} are provided.}
 
 \item{loc_left, loc_bottom}{Numbers in [0, 1] for the bottom-left position of
-the inset on the full canvas. Ignored when \code{main = TRUE}.}
+the inset on the full canvas.}
 
-\item{width, height}{Optional size of the inset as a fraction of canvas width/
-height. Supplying both is allowed but not recommended; aspect ratio will be
-prioritized. If both are NA and \code{scale_factor} is NA, \code{scale_factor} is
-set to 1.0 with a warning.}
+\item{width, height}{Numeric values in (0, 1] for the size of the inset.
+It is recommended to provide only one of these; the other dimension will be
+inferred to maintain the aspect ratio of the spatial extent. It is also
+recommended to use \code{scale_factor} to automatically size the inset relative to
+the main plot instead of specifying width/height directly.}
 
-\item{scale_factor}{Numeric. If not NA, the inset's width/height are
+\item{scale_factor}{Numeric value in (0, 1] indicating the scale of the inset
+relative to the main plot. If not NA, the inset's width/height are
 automatically derived from the spatial ranges relative to the main plot
-multiplied by this factor. When specified, \code{width} and \code{height} are ignored.
-See \code{\link[=with_inset]{with_inset()}} for details.}
+multiplied by this factor. For example, the scale of the main plot is 1:10,000,
+the inset's dimensions will be 1:20,000 if \code{scale_factor} is 0.5.}
 
 \item{main}{Logical. TRUE marks this spec as the main plot (exactly one).
 Default FALSE.}
@@ -49,27 +52,28 @@ plot passed to \code{\link[=with_inset]{with_inset()}}.}
 }
 \value{
 A list with elements \code{bbox}, \code{loc_left}, \code{loc_bottom}, \code{width},
-\code{height}, \code{scale_factor}, \code{main}, \code{plot}, \code{hpos}, and \code{vpos}.
+\code{height}, \code{scale_factor}, \code{main}, \code{plot}, \code{hpos}, and \code{vpos}. You do not
+normally need to interact with this object directly; it is used internally.
 }
 \description{
 Define the spatial extent and positioning for each subplot (main or inset).
 }
 \examples{
-# Create a main plot specification
-main_spec <- inset_spec(main = TRUE)
-
-# Create an inset plot specification with explicit dimensions
-inset_spec_dim <- inset_spec(
-    xmin = -120, xmax = -100, ymin = 30, ymax = 50,
-    loc = "right bottom",
-    width = 0.3
-)
-
-# Create an inset with scale factor
-inset_spec_scaled <- inset_spec(
-    xmin = -120, xmax = -100, ymin = 30, ymax = 50,
-    loc = "left bottom",
-    scale_factor = 0.5
+specs <- list(
+    # Create a main plot specification
+    inset_spec(main = TRUE),
+    # Create an inset plot specification with explicit dimensions
+    inset_spec(
+        xmin = -120, xmax = -100, ymin = 30, ymax = 50,
+        loc = "right bottom",
+        width = 0.3
+    ),
+    # Create an inset with scale factor
+    inset_spec(
+        xmin = -120, xmax = -100, ymin = 30, ymax = 50,
+        loc = "left bottom",
+        scale_factor = 0.5
+    )
 )
 
 }
