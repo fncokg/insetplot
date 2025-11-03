@@ -1,126 +1,65 @@
 #' insetplot: Compose ggplot2 maps with insets
 #'
-#' Utilities to compose a main ggplot with one or more inset maps using simple
-#' spatial configuration. Define insets with bounding boxes, positions, and sizes,
-#' then reuse the same plotting code for all subplots. Insets are composed using
-#' patchwork's inset_element() for flexible layering over the main plot.
+#' insetplot lets you create ggplot2 maps with inset maps easily and flexibly. It handles
+#' spatial configuration, aspect ratios, and plot composition automatically.
 #'
 #' @section Core workflow:
 #' \enumerate{
-#'   \item Use \code{\link{inset_spec}} to define spatial extents, positions, and
-#'     sizing for main and inset plots
-#'   \item Use \code{\link{config_insetmap}} to create and store a reusable configuration
-#'     from your spatial data and inset specifications
-#'   \item Use \code{\link{with_inset}} to compose the main and inset plots
-#'     automatically with proper coordinate systems and borders
+#'   \item Build a configuration with \code{\link{config_insetmap}} and \code{\link{inset_spec}} by specifying necessary parameters (position and size).
+#'   \item Pass your \code{ggplot} object to \code{\link{with_inset}} to generate the composed figure.
+#'   \item Save the final plot with \code{\link{ggsave_inset}} to maintain correct aspect ratio.
 #' }
 #'
 #' @section Main functions:
 #' \itemize{
-#'   \item \code{\link{inset_spec}}: Define spatial extent (bounding box),
-#'     positioning (location or custom coordinates), and sizing (scale factor or
-#'     explicit dimensions) for each subplot
-#'   \item \code{\link{config_insetmap}}: Create and store an inset map configuration
-#'     including data cropping, CRS transformations, and border settings
-#'   \item \code{\link{with_inset}}: Compose the main and inset plots using
-#'     patchwork, with automatic coordinate system handling via coord_sf()
-#'   \item \code{\link{last_insetcfg}}: Retrieve the most recently created
-#'     inset configuration
-#'   \item \code{\link{ggsave_inset}}: Save composed plots with correct aspect ratio
+#'   \item \code{\link{inset_spec}}: Define bbox, position (\code{loc} or \code{loc_left}/\code{loc_bottom}),
+#'     and size (prefer \code{scale_factor}; or provide one of \code{width}/\code{height}).
+#'   \item \code{\link{config_insetmap}}: Create and store the configuration.
+#'   \item \code{\link{with_inset}}: Crop each subplot, compose subplots and calculate sizes and positions automatically.
+#'   \item \code{\link{ggsave_inset}}: Save with the correct aspect ratio derived from \code{\link{with_inset}},
+#'     with optional \code{ratio_scale} for fine-tuning.
 #' }
 #'
-#' @section Utility functions:
-#' \itemize{
-#'   \item \code{\link{map_border}}: Add a rectangular border around inset plots
-#'     for visual separation
-#' }
-#'
-#' @section Configuration details:
-#' \itemize{
-#'   \item Inset specifications require exactly one main plot (main = TRUE)
-#'   \item Missing bbox values are automatically filled using the overall spatial extent
-#'   \item Each subplot's coordinate system is set via coord_sf() with CRS transformations
-#'   \item Inset sizing can be determined by: (1) scale_factor (relative to main plot),
-#'     or (2) explicit width/height values with automatic aspect ratio handling
-#'   \item Non-main insets are positioned using patchwork::inset_element() with
-#'     bottom-left anchor (halign = 0, valign = 0)
-#' }
-#'
-#' @section Key features:
-#' \itemize{
-#'   \item Keep ggplot2 plotting code unchanged; specify insets via configuration
-#'   \item Automatic spatial extent inference from data cropping
-#'   \item Flexible sizing: scale factors, explicit dimensions, or aspect ratio-based computation
-#'   \item Coordinate reference system (CRS) transformations via sf::st_transform() and ggplot2::coord_sf()
-#'   \item Automatic borders and styling for insets
-#'   \item Multiple insets with flexible positioning (corners, edges, or custom coordinates)
-#'   \item Optional detailed output for debugging (.return_details = TRUE)
-#'   \item As-is mode for code reuse outside inset workflow (.as_is = TRUE)
-#' }
-#'
-#' @section Plot composition:
-#' The package uses patchwork's inset_element() for composing plots:
-#' \itemize{
-#'   \item Main plot serves as the base layer
-#'   \item Insets are overlaid on top using relative positioning (0-1 normalized coordinates)
-#'   \item Each inset can have its own custom plot or use a shared base plot
-#'   \item Spatial cropping and coordinate transformations are handled internally
-#' }
-#'
-#' @section Aspect ratio management:
-#' For best results, the saved image aspect ratio should match the configuration:
-#' \itemize{
-#'   \item main_ratio: Aspect ratio of the main plot's spatial extent
-#'   \item full_ratio: Target width-to-height ratio for the entire composed figure
-#'   \item Use ggsave_inset() to automatically calculate dimensions
-#' }
-#'
-#' @section Workflow example:
+#' @section Example:
 #' \preformatted{
 #' library(sf)
 #' library(ggplot2)
 #' library(insetplot)
 #'
-#' # Load spatial data
 #' nc <- st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 #'
-#' # Option 1: Use a shared base plot for all subplots
+#' # Approach 1: shared base plot for all subplots
 #' config_insetmap(
-#'     data_list = list(nc),
-#'     specs = list(
-#'         inset_spec(main = TRUE),
-#'         inset_spec(
-#'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc = "left bottom", width = 0.3
-#'         )
-#'     ),
-#'     full_ratio = 16 / 9
+#'   data_list = list(nc),
+#'   specs = list(
+#'     inset_spec(main = TRUE),
+#'     inset_spec(
+#'       xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+#'       loc = "left bottom", scale_factor = 0.5
+#'     )
+#'   )
 #' )
-#'
 #' base_map <- ggplot(nc, aes(fill = AREA)) +
-#'     geom_sf() +
-#'     theme_void()
+#'   geom_sf() +
+#'   theme_void()
+#' p <- with_inset(base_map)
 #'
-#' result <- with_inset(base_map)
-#'
-#' # Option 2: Use custom plots for each subplot
+#' # Approach 2: provide custom plots in each spec
 #' config_insetmap(
-#'     data_list = list(nc),
-#'     specs = list(
-#'         inset_spec(main = TRUE, plot = base_map),
-#'         inset_spec(
-#'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc = "left bottom", width = 0.3,
-#'             plot = base_map + ggtitle("Detail")
-#'         )
-#'     ),
-#'     full_ratio = 16 / 9
+#'   data_list = list(nc),
+#'   specs = list(
+#'     inset_spec(main = TRUE, plot = base_map),
+#'     inset_spec(
+#'       xmin = -84, xmax = -75, ymin = 33, ymax = 37,
+#'       loc = "left bottom", scale_factor = 0.5,
+#'       plot = base_map + ggtitle("Detail")
+#'     )
+#'   )
 #' )
+#' p <- with_inset()  # plot argument is optional here
 #'
-#' result <- with_inset()  # plot parameter is optional
-#'
-#' # Save with proper aspect ratio
-#' ggsave_inset("map.png", result, width = 10)
+#' # Save with the correct aspect ratio
+#' ggsave_inset("map.png", p, width = 10)
 #' }
 #'
 #' @seealso \code{\link{inset_spec}}, \code{\link{config_insetmap}},
