@@ -16,7 +16,7 @@
 #'   inferred to maintain the aspect ratio of the spatial extent. It is also
 #'   recommended to use `scale_factor` to automatically size the inset relative to
 #'   the main plot instead of specifying width/height directly.
-#' @param scale_factor Numeric value in (0, 1\] indicating the scale of the inset
+#' @param scale_factor Numeric value in (0, Inf) indicating the scale of the inset
 #'   relative to the main plot. If not NA, the inset's width/height are
 #'   automatically derived from the spatial ranges relative to the main plot
 #'   multiplied by this factor. For example, the scale of the main plot is 1:10,000,
