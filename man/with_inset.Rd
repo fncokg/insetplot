@@ -57,8 +57,8 @@ config_insetmap(
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
-            xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-            loc = "left bottom", scale_factor = 0.5
+            xmin = -82, xmax = -80.5, ymin = 35.5, ymax = 36,
+            loc = "left bottom", scale_factor = 2
         )
     )
 )
@@ -66,6 +66,8 @@ config_insetmap(
 # Supply base plot for all subplots
 base <- ggplot(nc, aes(fill = AREA)) +
     geom_sf() +
+    scale_fill_viridis_c() +
+    guides(fill = "none") +
     theme_void()
 with_inset(base)
 
@@ -75,8 +77,8 @@ config_insetmap(
     specs = list(
         inset_spec(main = TRUE, plot = base),
         inset_spec(
-            xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-            loc = "left bottom", scale_factor = 0.5,
+            xmin = -82, xmax = -80.5, ymin = 35.5, ymax = 36,
+            loc = "left bottom", scale_factor = 2,
             plot = base # Each spec has its own plot
         )
     )

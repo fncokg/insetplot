@@ -66,8 +66,8 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #'     specs = list(
 #'         inset_spec(main = TRUE),
 #'         inset_spec(
-#'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc = "left bottom", scale_factor = 0.5
+#'             xmin = -82, xmax = -80.5, ymin = 35.5, ymax = 36,
+#'             loc = "left bottom", scale_factor = 2
 #'         )
 #'     )
 #' )
@@ -75,6 +75,8 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #' # Supply base plot for all subplots
 #' base <- ggplot(nc, aes(fill = AREA)) +
 #'     geom_sf() +
+#'     scale_fill_viridis_c() +
+#'     guides(fill = "none") +
 #'     theme_void()
 #' with_inset(base)
 #'
@@ -84,8 +86,8 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #'     specs = list(
 #'         inset_spec(main = TRUE, plot = base),
 #'         inset_spec(
-#'             xmin = -84, xmax = -75, ymin = 33, ymax = 37,
-#'             loc = "left bottom", scale_factor = 0.5,
+#'             xmin = -82, xmax = -80.5, ymin = 35.5, ymax = 36,
+#'             loc = "left bottom", scale_factor = 2,
 #'             plot = base # Each spec has its own plot
 #'         )
 #'     )
@@ -279,6 +281,8 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #'
 #' base <- ggplot(nc, aes(fill = AREA)) +
 #'     geom_sf() +
+#'     scale_fill_viridis_c() +
+#'     guides(fill = "none") +
 #'     theme_void()
 #' with_inset(base)
 #'

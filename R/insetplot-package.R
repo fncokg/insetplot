@@ -41,6 +41,8 @@
 #' )
 #' base_map <- ggplot(nc, aes(fill = AREA)) +
 #'   geom_sf() +
+#'   scale_fill_viridis_c() +
+#'   guides(fill = "none") +
 #'   theme_void()
 #' p <- with_inset(base_map)
 #'

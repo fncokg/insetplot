@@ -18,6 +18,8 @@ create_base_ggplot <- function(data = NULL) {
     }
     ggplot(data, aes(fill = AREA)) +
         geom_sf() +
+        scale_fill_viridis_c() +
+        guides(fill = "none") +
         theme_void()
 }
 

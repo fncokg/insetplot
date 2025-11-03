@@ -21,7 +21,7 @@ This vignette shows how to compose ggplot2 maps with insets using insetplot, wit
 
 ## Quick start
 
-```{r quick-start, out.width="100%",fig.asp=0.4,dpi=300}
+```{r quick-start, out.width="100%",fig.asp=0.4,dpi=300, fig.alt="North Carolina map with an inset showing a zoomed detail region at the bottom-left corner."}
 # 1) Configure the layout: one main map + one inset (nc loaded in setup)
 config_insetmap(
     data_list = list(nc),
@@ -53,7 +53,7 @@ You can also provide custom plots per spec, then call `with_inset()` without a `
 
 For example, you may want to add some annotations to the inset(s) only.
 
-```{r quick-start-custom, out.width="100%",fig.asp=0.4,dpi=300}
+```{r quick-start-custom, out.width="100%",fig.asp=0.4,dpi=300, fig.alt="North Carolina map with an inset showing a zoomed detail region labeled 'Detail' at the bottom-left corner."}
 main <- ggplot(nc, aes(fill = AREA)) +
     geom_sf() +
     scale_fill_viridis_c() +
@@ -102,7 +102,7 @@ Suppose we want to add the inset at the bottom-left corner with height 30% of th
 
 Now, let's try `patchwork::inset_element()`. Since, here, we don't know the correct aspect ratio, we might specify arbitrary width/height for the inset.
 
-```{r compare-patchwork-real, fig.cap='Inset via patchwork', out.width="100%",fig.asp=0.4,dpi=300}
+```{r compare-patchwork-real, fig.cap='Inset via patchwork', out.width="100%",fig.asp=0.4,dpi=300, fig.alt="North Carolina map with an inset positioned at bottom-left using patchwork, showing some visual distortion due to mismatched aspect ratio."}
 # Manual insetting with patchwork: force a mismatched container ratio
 main_map + patchwork::inset_element(
     inset_map,
@@ -113,14 +113,14 @@ main_map + patchwork::inset_element(
 
 And now `cowplot::draw_plot()`:
 
-```{r compare-cowplot-real, fig.cap='Inset via cowplot', out.width="100%",fig.asp=0.4,dpi=300}
+```{r compare-cowplot-real, fig.cap='Inset via cowplot', out.width="100%",fig.asp=0.4,dpi=300, fig.alt="North Carolina map with an inset positioned at bottom-left using cowplot with 30% width and height, showing some distortion."}
 cowplot::ggdraw(main_map) +
     cowplot::draw_plot(inset_map, 0, 0, 0.3, 0.3) # arbitrary width/height
 ```
 
 Thing will become much worse when you save the plots with different output apsect ratios. For example, if I save the above plot with a height-to-width artio of 1.0:
 
-```{r compare-cowplot-real-asp, fig.cap='Inset via cowplot with wrong aspect ratio', out.width="100%",fig.asp=1.0,dpi=300}
+```{r compare-cowplot-real-asp, fig.cap='Inset via cowplot with wrong aspect ratio', out.width="100%",fig.asp=1.0,dpi=300, fig.alt="North Carolina map with an inset using cowplot with square aspect ratio (1:1), showing significant distortion due to incompatible aspect ratio."}
 cowplot::ggdraw(main_map) +
     cowplot::draw_plot(inset_map, 0, 0, 0.3, 0.3) # arbitrary width/height
 ```
@@ -129,7 +129,7 @@ You may get better results by adjusting the inset size manually based on visual 
 
 Now let's see how `insetplot` handles this more gracefully.
 
-```{r compare-insetplot-real, fig.cap='Inset via insetplot', out.width="100%",fig.asp=0.4,dpi=300}
+```{r compare-insetplot-real, fig.cap='Inset via insetplot', out.width="100%",fig.asp=0.4,dpi=300, fig.alt="North Carolina map with an inset positioned at bottom-left using insetplot, showing correct aspect ratio preservation without distortion."}
 config_insetmap(
     data_list = list(nc),
     specs = list(
@@ -147,7 +147,7 @@ with_inset(main_map)
 
 Even you save this plot with a not-that-good aspect ratio, such as 1.0:
 
-```{r compare-insetplot-real-asp, fig.cap='Inset via insetplot with wrong aspect ratio', out.width="100%",fig.asp=1.0,dpi=300}
+```{r compare-insetplot-real-asp, fig.cap='Inset via insetplot with wrong aspect ratio', out.width="100%",fig.asp=1.0,dpi=300, fig.alt="North Carolina map with an inset using insetplot with square aspect ratio (1:1), demonstrating that insetplot still maintains correct spatial aspect despite the output canvas ratio mismatch."}
 with_inset(main_map)
 ```
 
