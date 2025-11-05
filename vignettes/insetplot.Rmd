@@ -83,6 +83,12 @@ But why not just use `patchwork::inset_element()` or `cowplot::draw_plot()` dire
 
 First, without `insetplot`, we should manually create the inset plot by zooming into the desired bbox like this (I add borders to plots for clarity):
 
+```{r setup-libs, include=FALSE}
+if (!requireNamespace("cowplot", quietly = TRUE)) {
+    install.packages("cowplot")
+}
+```
+
 ```{r realmap-setup}
 inset_bbox <- c(xmin = -82, xmax = -80.5, ymin = 35.5, ymax = 36)
 main_map <- ggplot(nc, aes(fill = AREA)) +
