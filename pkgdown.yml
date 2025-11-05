@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   insetplot: insetplot.html
-last_built: 2025-11-05T12:34Z
+last_built: 2025-11-05T12:37Z
 urls:
   reference: https://fncokg.github.io/insetplot/reference
   article: https://fncokg.github.io/insetplot/articles
