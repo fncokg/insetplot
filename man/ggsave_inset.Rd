@@ -28,7 +28,7 @@ ggsave_inset(
 
 \item{scale}{Scaling factor. Default 1.}
 
-\item{width, }{height Width and height in inches. You only need to provide one; the other
+\item{width, height}{Width and height in inches. You only need to provide one; the other
 will be calculated automatically. Default NA.}
 
 \item{...}{Additional arguments passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}.}

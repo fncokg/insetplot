@@ -13,6 +13,7 @@ library(ggplot2)
 library(sf)
 library(insetplot)
 library(patchwork)
+require(cowplot)
 # Shared data available to all chunks
 nc <- st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 ```
@@ -46,7 +47,7 @@ base <- ggplot(nc, aes(fill = AREA)) +
 with_inset(base)
 
 # 4) Save with correct aspect ratio (only width or height is needed)
-ggsave_inset("inset_map.png", width = 10)
+# ggsave_inset("inset_map.png", width = 10)
 ```
 
 You can also provide custom plots per spec, then call `with_inset()` without a `plot` argument.

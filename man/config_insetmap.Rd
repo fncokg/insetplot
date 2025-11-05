@@ -23,9 +23,6 @@ bounding box and coordinate systems for the insets.}
 \item{border_args}{A list of named arguments passed to \code{\link[=map_border]{map_border()}} to style the
 borders around inset plots. See \code{\link[=map_border]{map_border()}} for details
 (defaults: \code{color = "black"}, \code{linewidth = 1}).}
-
-\item{full_ratio}{Numeric width-to-height ratio of the full canvas. For best
-results, save figures with this ratio. Default 1.}
 }
 \value{
 An object of class \code{insetcfg}. Also stored as the last configuration, retrievable via \code{\link[=last_insetcfg]{last_insetcfg()}}.

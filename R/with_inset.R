@@ -247,7 +247,7 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #' @param device Device to save to (e.g., "png", "pdf"). Default NULL (inferred from filename).
 #' @param path Directory path for saving. Default NULL (current directory).
 #' @param scale Scaling factor. Default 1.
-#' @param width, height Width and height in inches. You only need to provide one; the other
+#' @param width,height Width and height in inches. You only need to provide one; the other
 #'   will be calculated automatically. Default NA.
 #' @param ... Additional arguments passed to [ggplot2::ggsave()].
 #' @param ratio_scale Optional scaling factor to adjust the aspect ratio. Default 1.0. Use when

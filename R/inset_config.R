@@ -123,8 +123,6 @@ inset_spec <- function(
 #' @param data_list A list of spatial data objects (sf class). These data are used to compute the overall
 #'   bounding box and coordinate systems for the insets.
 #' @param specs A non-empty list of [inset_spec()] objects.
-#' @param full_ratio Numeric width-to-height ratio of the full canvas. For best
-#'   results, save figures with this ratio. Default 1.
 #' @param crs Coordinate reference system to transform to, passed to
 #'   [ggplot2::coord_sf()] as `crs`. Default `"EPSG:4326"`.
 #' @param border_args A list of named arguments passed to [map_border()] to style the
