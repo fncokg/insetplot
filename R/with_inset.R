@@ -263,6 +263,7 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #' a warning is issued as the output aspect ratio may not match the configuration.
 #'
 #' @examples
+#' \dontrun{
 #' library(sf)
 #' library(ggplot2)
 #'
@@ -288,7 +289,7 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #'
 #' # Save with automatically calculated height
 #' ggsave_inset("inset_map.png", width = 10)
-#'
+#' }
 #' @seealso [with_inset()]
 #' @export
 ggsave_inset <- function(filename, plot = last_plot(), device = NULL, path = NULL, scale = 1, width = NA, height = NA, ..., ratio_scale = 1.0, .cfg = last_insetcfg()) {
