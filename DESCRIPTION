@@ -18,3 +18,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 BugReports: https://github.com/fncokg/insetplot/issues
+URL: https://fncokg.github.io/insetplot/
