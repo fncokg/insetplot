@@ -75,6 +75,10 @@ with_inset()  # plot argument optional when each spec has its own plot
 devtools::install_github("fncokg/insetplot")
 ```
 
+## Documentation
+
+Full documentation and more examples are available at [insetplot package site](https://fncokg.github.io/insetplot/).
+
 ## Core functions
 
 - `inset_spec()` — Define bbox, position, and size for each subplot
