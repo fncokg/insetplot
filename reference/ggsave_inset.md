@@ -94,7 +94,6 @@ may not match the configuration.
 ## Examples
 
 ``` r
-# \donttest{
 library(sf)
 library(ggplot2)
 
@@ -120,6 +119,5 @@ with_inset(base)
 
 
 # Save with automatically calculated height
-ggsave_inset("inset_map.png", width = 10)
-# }
+# ggsave_inset("inset_map.png", width = 10)
 ```
