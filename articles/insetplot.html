@@ -88,7 +88,7 @@ insetplot, with emphasis on runnable code.</p>
 <span></span>
 <span><span class="co"># 3) Compose</span></span>
 <span><span class="fu"><a href="../reference/with_inset.html">with_inset</a></span><span class="op">(</span><span class="va">base</span><span class="op">)</span></span></code></pre></div>
-<p><img src="insetplot_files/figure-html/quick-start-1.png" alt="North Carolina map with an inset showing a zoomed detail region at the bottom-left corner." width="100%" style="display: block; margin: auto;"></p>
+<p><img src="insetplot_files/figure-html/quick-start-1.png" class="r-plt" alt="North Carolina map with an inset showing a zoomed detail region at the bottom-left corner." width="100%" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># 4) Save with correct aspect ratio (only width or height is needed)</span></span>
@@ -118,7 +118,7 @@ only.</p>
 <span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/with_inset.html">with_inset</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="insetplot_files/figure-html/quick-start-custom-1.png" alt="North Carolina map with an inset showing a zoomed detail region labeled 'Detail' at the bottom-left corner." width="100%" style="display: block; margin: auto;"></p>
+<p><img src="insetplot_files/figure-html/quick-start-custom-1.png" class="r-plt" alt="North Carolina map with an inset showing a zoomed detail region labeled 'Detail' at the bottom-left corner." width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">
 <h2 id="why-insetplot-vs--using-cowplotpatchwork-directly">Why insetplot (vs. using cowplot/patchwork directly)<a class="anchor" aria-label="anchor" href="#why-insetplot-vs--using-cowplotpatchwork-directly"></a>
@@ -155,7 +155,7 @@ width/height for the inset.</p>
 <span>    align_to <span class="op">=</span> <span class="st">"panel"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="insetplot_files/figure-html/compare-patchwork-real-1.png" alt="North Carolina map with an inset positioned at bottom-left using patchwork, showing some visual distortion due to mismatched aspect ratio." width="100%"><p class="caption">
+<img src="insetplot_files/figure-html/compare-patchwork-real-1.png" class="r-plt" alt="North Carolina map with an inset positioned at bottom-left using patchwork, showing some visual distortion due to mismatched aspect ratio." width="100%"><p class="caption">
 Inset via patchwork
 </p>
 </div>
@@ -164,7 +164,7 @@ Inset via patchwork
 <code class="sourceCode R"><span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/ggdraw.html" class="external-link">ggdraw</a></span><span class="op">(</span><span class="va">main_map</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/draw_plot.html" class="external-link">draw_plot</a></span><span class="op">(</span><span class="va">inset_map</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.3</span><span class="op">)</span> <span class="co"># arbitrary width/height</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="insetplot_files/figure-html/compare-cowplot-real-1.png" alt="North Carolina map with an inset positioned at bottom-left using cowplot with 30% width and height, showing some distortion." width="100%"><p class="caption">
+<img src="insetplot_files/figure-html/compare-cowplot-real-1.png" class="r-plt" alt="North Carolina map with an inset positioned at bottom-left using cowplot with 30% width and height, showing some distortion." width="100%"><p class="caption">
 Inset via cowplot
 </p>
 </div>
@@ -175,7 +175,7 @@ height-to-width artio of 1.0:</p>
 <code class="sourceCode R"><span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/ggdraw.html" class="external-link">ggdraw</a></span><span class="op">(</span><span class="va">main_map</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/draw_plot.html" class="external-link">draw_plot</a></span><span class="op">(</span><span class="va">inset_map</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0.3</span>, <span class="fl">0.3</span><span class="op">)</span> <span class="co"># arbitrary width/height</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="insetplot_files/figure-html/compare-cowplot-real-asp-1.png" alt="North Carolina map with an inset using cowplot with square aspect ratio (1:1), showing significant distortion due to incompatible aspect ratio." width="100%"><p class="caption">
+<img src="insetplot_files/figure-html/compare-cowplot-real-asp-1.png" class="r-plt" alt="North Carolina map with an inset using cowplot with square aspect ratio (1:1), showing significant distortion due to incompatible aspect ratio." width="100%"><p class="caption">
 Inset via cowplot with wrong aspect ratio
 </p>
 </div>
@@ -198,7 +198,7 @@ gracefully.</p>
 <span><span class="co"># You even don't need to prepare `inset_map` here since insetplot handles it internally</span></span>
 <span><span class="fu"><a href="../reference/with_inset.html">with_inset</a></span><span class="op">(</span><span class="va">main_map</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="insetplot_files/figure-html/compare-insetplot-real-1.png" alt="North Carolina map with an inset positioned at bottom-left using insetplot, showing correct aspect ratio preservation without distortion." width="100%"><p class="caption">
+<img src="insetplot_files/figure-html/compare-insetplot-real-1.png" class="r-plt" alt="North Carolina map with an inset positioned at bottom-left using insetplot, showing correct aspect ratio preservation without distortion." width="100%"><p class="caption">
 Inset via insetplot
 </p>
 </div>
@@ -207,7 +207,7 @@ Inset via insetplot
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/with_inset.html">with_inset</a></span><span class="op">(</span><span class="va">main_map</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="insetplot_files/figure-html/compare-insetplot-real-asp-1.png" alt="North Carolina map with an inset using insetplot with square aspect ratio (1:1), demonstrating that insetplot still maintains correct spatial aspect despite the output canvas ratio mismatch." width="100%"><p class="caption">
+<img src="insetplot_files/figure-html/compare-insetplot-real-asp-1.png" class="r-plt" alt="North Carolina map with an inset using insetplot with square aspect ratio (1:1), demonstrating that insetplot still maintains correct spatial aspect despite the output canvas ratio mismatch." width="100%"><p class="caption">
 Inset via insetplot with wrong aspect ratio
 </p>
 </div>
@@ -334,7 +334,7 @@ instead of just the composed ggplot.</li>
 </h3>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Provide only width (or only height). The other dimension is computed to match the main ratio.</span></span>
-<span><span class="fu"><a href="../reference/ggsave_inset.html">ggsave_inset</a></span><span class="op">(</span><span class="st">"map.png"</span>, <span class="va">p</span>, width <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># ggsave_inset("map.png", p, width = 10)</span></span></code></pre></div>
 <p><code><a href="../reference/ggsave_inset.html">ggsave_inset()</a></code> arguments:</p>
 <ul>
 <li>
@@ -358,7 +358,7 @@ needed for legends/titles.</li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
