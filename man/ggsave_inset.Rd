@@ -58,7 +58,7 @@ to maintain aspect ratio consistency. If both width and height are provided,
 a warning is issued as the output aspect ratio may not match the configuration.
 }
 \examples{
-\dontrun{
+\donttest{
 library(sf)
 library(ggplot2)
 
