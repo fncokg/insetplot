@@ -94,7 +94,7 @@ may not match the configuration.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 library(sf)
 library(ggplot2)
 
@@ -118,7 +118,8 @@ base <- ggplot(nc, aes(fill = AREA)) +
     theme_void()
 with_inset(base)
 
+
 # Save with automatically calculated height
 ggsave_inset("inset_map.png", width = 10)
-} # }
+# }
 ```
