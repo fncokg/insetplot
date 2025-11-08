@@ -263,7 +263,7 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #' a warning is issued as the output aspect ratio may not match the configuration.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(sf)
 #' library(ggplot2)
 #'

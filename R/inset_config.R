@@ -91,7 +91,7 @@ inset_spec <- function(
             warning("Providing both width and height is not recommended.")
         }
         if (!is.na(scale_factor) && (!is.na(width) || !is.na(height))) {
-            cat("When scale_factor is specified, the width and height are directly determined by the main plot, and therefore the width and height will be ignored.")
+            warning("When scale_factor is specified, the width and height are directly determined by the main plot, and therefore the width and height will be ignored.")
         }
         if (is.na(width) && is.na(height) && is.na(scale_factor)) {
             scale_factor <- 1.0

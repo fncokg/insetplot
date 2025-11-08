@@ -232,7 +232,7 @@ out <- with_inset(list(main_map, inset_map))
 
 ```{r params-ggsave-inset, eval=FALSE}
 # Provide only width (or only height). The other dimension is computed to match the main ratio.
-ggsave_inset("map.png", p, width = 10)
+# ggsave_inset("map.png", p, width = 10)
 ```
 
 `ggsave_inset()` arguments:
