@@ -58,7 +58,6 @@ to maintain aspect ratio consistency. If both width and height are provided,
 a warning is issued as the output aspect ratio may not match the configuration.
 }
 \examples{
-\donttest{
 library(sf)
 library(ggplot2)
 
@@ -83,8 +82,7 @@ base <- ggplot(nc, aes(fill = AREA)) +
 with_inset(base)
 
 # Save with automatically calculated height
-ggsave_inset("inset_map.png", width = 10)
-}
+# ggsave_inset("inset_map.png", width = 10)
 }
 \seealso{
 \code{\link[=with_inset]{with_inset()}}
