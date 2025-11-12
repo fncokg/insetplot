@@ -287,7 +287,8 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #' with_inset(base)
 #'
 #' # Save with automatically calculated height
-#' # ggsave_inset("inset_map.png", width = 10)
+#'
+#' ggsave_inset(paste0(tempdir(), "/inset_map.png"), width = 10)
 #' @seealso [with_inset()]
 #' @export
 ggsave_inset <- function(filename, plot = last_plot(), device = NULL, path = NULL, scale = 1, width = NA, height = NA, ..., ratio_scale = 1.0, .cfg = last_insetcfg()) {
