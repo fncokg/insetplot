@@ -119,5 +119,6 @@ with_inset(base)
 
 
 # Save with automatically calculated height
-# ggsave_inset("inset_map.png", width = 10)
+
+ggsave_inset(paste0(tempdir(), "/inset_map.png"), width = 10)
 ```
