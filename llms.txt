@@ -71,6 +71,14 @@ with_inset()  # plot argument optional when each spec has its own plot
 
 ## Installation
 
+To install the released version from CRAN:
+
+``` r
+install.packages("insetplot")
+```
+
+To install the development version from GitHub:
+
 ``` r
 devtools::install_github("fncokg/insetplot")
 ```
