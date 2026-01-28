@@ -167,6 +167,7 @@ config_insetmap <- function(data_list, specs, crs = sf::st_crs("EPSG:4326"), bor
     }
 
     from_crs <- st_crs(data_list[[1]])
+    widest_bbox <- get_widest_bbox(data_list)
     main_idx <- NULL
     for (i in seq_along(specs)) {
         spec <- specs[[i]]
