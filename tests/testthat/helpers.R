@@ -30,9 +30,13 @@ create_titled_ggplot <- function(data = NULL, title = "Plot") {
 
 #' Configure inset map with specifications
 setup_inset_config <- function(specs_list = NULL, data_list = NULL) {
+    bbox_val <- NULL
     if (is.null(data_list)) {
         data_list <- list(setup_base_plot())
     }
+    # Use the first element of data_list to determine bbox
+    bbox_val <- sf::st_bbox(data_list[[1]])
+
     if (is.null(specs_list)) {
         specs_list <- list(
             inset_spec(main = TRUE),
@@ -43,7 +47,7 @@ setup_inset_config <- function(specs_list = NULL, data_list = NULL) {
         )
     }
     config_insetmap(
-        data_list = data_list,
+        bbox = bbox_val,
         specs = specs_list
     )
 }

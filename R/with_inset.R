@@ -133,6 +133,7 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
             crs = .cfg$to_crs,
             xlim = c(spec$bbox["xmin"], spec$bbox["xmax"]),
             ylim = c(spec$bbox["ymin"], spec$bbox["ymax"]),
+            lims_method = .cfg$lims_method,
             expand = FALSE
         )
 

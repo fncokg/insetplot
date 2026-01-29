@@ -4,7 +4,7 @@ test_that("config_insetmap creates valid configuration with standard specs", {
     data <- setup_base_plot()
     specs <- create_standard_specs()
 
-    cfg <- config_insetmap(data_list = list(data), specs = specs)
+    cfg <- config_insetmap(bbox = sf::st_bbox(data), specs = specs)
 
     expect_is(cfg, "insetcfg")
     expect_equal(cfg$main_idx, 1)
@@ -21,7 +21,7 @@ test_that("config_insetmap requires exactly one main spec", {
     # Test no main spec
     expect_error(
         config_insetmap(
-            data_list = list(data),
+            bbox = sf::st_bbox(data),
             specs = list(inset_spec(main = FALSE, loc = "left bottom", width = 0.3))
         ),
         "Exactly one plot specification must have main = TRUE"
@@ -30,19 +30,9 @@ test_that("config_insetmap requires exactly one main spec", {
     # Test multiple main specs
     expect_error(
         config_insetmap(
-            data_list = list(data),
+            bbox = sf::st_bbox(data),
             specs = list(inset_spec(main = TRUE), inset_spec(main = TRUE))
         ),
         "Only one plot specification can have main = TRUE"
-    )
-})
-
-test_that("config_insetmap validates data_list", {
-    expect_error(
-        config_insetmap(
-            data_list = list(mtcars),
-            specs = list(inset_spec(main = TRUE))
-        ),
-        "data_list must be provided"
     )
 })

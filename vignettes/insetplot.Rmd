@@ -24,7 +24,7 @@ This vignette shows how to compose ggplot2 maps with insets using insetplot, wit
 ```{r quick-start, out.width="100%",fig.asp=0.4,dpi=300, fig.alt="North Carolina map with an inset showing a zoomed detail region at the bottom-left corner."}
 # 1) Configure the layout: one main map + one inset (nc loaded in setup)
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -61,7 +61,7 @@ main <- ggplot(nc, aes(fill = AREA)) +
     theme_void()
 
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE, plot = main),
         inset_spec(
@@ -131,7 +131,7 @@ Now let's see how `insetplot` handles this more gracefully.
 
 ```{r compare-insetplot-real, fig.cap='Inset via insetplot', out.width="100%",fig.asp=0.4,dpi=300, fig.alt="North Carolina map with an inset positioned at bottom-left using insetplot, showing correct aspect ratio preservation without distortion."}
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -194,21 +194,22 @@ inset_spec(
 
 ```{r params-config-insetmap, results='hide', message=FALSE, warning=FALSE}
 cfg <- config_insetmap(
-    data_list = list(nc), # list of sf objects used to compute extents/CRS
+    bbox = st_bbox(nc), # global bbox used to compute extents/CRS
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(xmin = -84, xmax = -75, ymin = 33, ymax = 37, loc = "left bottom", scale_factor = 0.5)
     ),
-    crs = sf::st_crs("EPSG:4326"), # target CRS for coord_sf()
+    to_crs = sf::st_crs("EPSG:4326"), # target CRS for coord_sf()
     border_args = list(color = "black", linewidth = 1) # passed to map_border()
 )
 ```
 
 `config_insetmap()` arguments:
 
-- `data_list`: list of sf objects; used to compute union bbox and main aspect ratio.
+- `bbox`: overall bounding box (sf bbox or similar).
 - `specs`: list of `inset_spec` objects; exactly one must have `main = TRUE`.
-- `crs`: target CRS passed to `ggplot2::coord_sf()`.
+- `to_crs`: target CRS passed to `ggplot2::coord_sf()`.
+- `from_crs`: source CRS for non-sf inputs.
 - `border_args`: style for inset borders via `map_border()`.
 
 ### Compose the figure (with_inset)

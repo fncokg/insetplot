@@ -120,11 +120,14 @@ inset_spec <- function(
 #' configuration contains subplot specifications, aspect ratio of the main plot,
 #' CRS settings, and border appearance for insets.
 #'
-#' @param data_list A list of spatial data objects (sf class). These data are used to compute the overall
-#'   bounding box and coordinate systems for the insets.
 #' @param specs A non-empty list of [inset_spec()] objects.
-#' @param crs Coordinate reference system to transform to, passed to
+#' @param to_crs Coordinate reference system to transform to, passed to
 #'   [ggplot2::coord_sf()] as `crs`. Default `"EPSG:4326"`.
+#' @param from_crs Coordinate reference system of bboxes in `specs`. Default `"EPSG:4326"`.
+#' @param bbox An optional bounding box (compatible with [sf::st_bbox()]) to define
+#'   the default extent for subplots that do not specify their own coordinates.
+#'   If NULL, subplots must specify their own valid dimensions/coordinates.
+#' @param lims_method Method to calculate limits from bbox. See also [ggplot2::coord_sf()]. Default `"cross"`.
 #' @param border_args A list of named arguments passed to [map_border()] to style the
 #'   borders around inset plots. See [map_border()] for details
 #'   (defaults: `color = "black"`, `linewidth = 1`).
@@ -137,7 +140,7 @@ inset_spec <- function(
 #' nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 #'
 #' config_insetmap(
-#'     data_list = list(nc),
+#'     bbox = sf::st_bbox(nc),
 #'     specs = list(
 #'         inset_spec(main = TRUE),
 #'         inset_spec(
@@ -149,11 +152,7 @@ inset_spec <- function(
 #'
 #' @seealso [inset_spec()], [with_inset()], [last_insetcfg()]
 #' @export
-config_insetmap <- function(data_list, specs, crs = sf::st_crs("EPSG:4326"), border_args = list()) {
-    # Input validation
-    if (missing(data_list) || length(data_list) == 0 || !all(sapply(data_list, function(x) inherits(x, "sf")))) {
-        stop("data_list must be provided, and all elements must be of class 'sf'")
-    }
+config_insetmap <- function(specs, to_crs = sf::st_crs("EPSG:4326"), from_crs = sf::st_crs("EPSG:4326"), bbox = NULL, lims_method = "cross", border_args = list()) {
     if (!is.list(specs) || length(specs) == 0) {
         stop("specs must be a non-empty list of inset_spec objects")
     }
@@ -166,14 +165,17 @@ config_insetmap <- function(data_list, specs, crs = sf::st_crs("EPSG:4326"), bor
         stop("Only one plot specification can have main = TRUE")
     }
 
-    from_crs <- st_crs(data_list[[1]])
-    widest_bbox <- get_widest_bbox(data_list)
     main_idx <- NULL
     for (i in seq_along(specs)) {
         spec <- specs[[i]]
         # Fill missing bbox values
-        full_bbox <- .fill_bbox(spec$bbox, widest_bbox)
-        data_bbox <- get_widest_bbox(lapply(data_list, function(data) st_transform(suppressWarnings(st_crop(data, full_bbox)), crs)))
+        full_bbox <- .fill_bbox(spec$bbox, bbox)
+        data_bbox <- .calc_limits_bbox(
+            method = lims_method,
+            bbox = full_bbox,
+            crs = to_crs,
+            default_crs = from_crs
+        )
         spec$data_bbox <- data_bbox
         spec$bbox <- full_bbox
         specs[[i]] <- spec
@@ -186,12 +188,12 @@ config_insetmap <- function(data_list, specs, crs = sf::st_crs("EPSG:4326"), bor
 
     cfg <- structure(
         list(
-            data_list = data_list,
             specs = specs,
             main_idx = main_idx,
             from_crs = from_crs,
-            to_crs = crs,
+            to_crs = to_crs,
             main_ratio = main_ratio,
+            lims_method = lims_method,
             border_args = utils::modifyList(
                 list(
                     color = "black",
@@ -243,7 +245,7 @@ set_last_insetcfg <- function(insetcfg) .cfg_store$set(insetcfg)
 #'
 #' # Configure inset map
 #' config_insetmap(
-#'     data_list = list(nc),
+#'     bbox = sf::st_bbox(nc),
 #'     specs = list(
 #'         inset_spec(main = TRUE),
 #'         inset_spec(

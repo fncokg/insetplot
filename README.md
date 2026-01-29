@@ -21,7 +21,7 @@ nc <- st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 # Configure insets: one main + one inset
 config_insetmap(
-  data_list = list(nc),
+  bbox = st_bbox(nc),
   specs = list(
     inset_spec(main = TRUE),
     inset_spec(
@@ -55,7 +55,7 @@ inset_plot <- base_plot +
   ggtitle("Detail Region") 
 
 config_insetmap(
-  data_list = list(nc),
+  bbox = st_bbox(nc),
   specs = list(
     inset_spec(main = TRUE, plot = main_plot),
     inset_spec(
@@ -97,7 +97,9 @@ Full documentation and more examples are available at [insetplot package site](h
   - `main`: exactly one spec must set `main = TRUE`
 
 - `config_insetmap()` — Build and store configuration
-  - `data_list`: list of sf objects
+  - `bbox`: overall bounding box (sf bbox or similar)
+  - `to_crs`: target Coordinate Reference System
+  - `from_crs`: source CRS for non-sf inputs
   - `specs`: list of `inset_spec()`
   - `crs`: target CRS (passed to coord_sf as `crs`)
   - `border_args`: forwarded to `map_border()` for inset borders
@@ -119,7 +121,7 @@ Full documentation and more examples are available at [insetplot package site](h
 
 ```r
 config_insetmap(
-  data_list = list(nc),
+  bbox = st_bbox(nc),
   specs = list(
     inset_spec(main = TRUE),
     inset_spec(
@@ -137,7 +139,7 @@ with_inset(base_plot)
 ### Pass custom plots after configuration
 ```r
 config_insetmap(
-  data_list = list(nc),
+  bbox = st_bbox(nc),
   specs = list(
     inset_spec(main = TRUE),
     inset_spec(
@@ -155,7 +157,6 @@ with_inset(list(main_plot, inset_plot))
 ```r
 ggsave_inset(
   "map_with_insets.png",
-  plot = composed_plot,
   # `height` auto-calculated from `main_ratio`
   width = 12,
   dpi = 300
