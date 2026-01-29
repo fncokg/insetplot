@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">insetplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,7 +70,7 @@
 <span></span>
 <span><span class="co"># Configure insets: one main + one inset</span></span>
 <span><span class="fu"><a href="reference/config_insetmap.html">config_insetmap</a></span><span class="op">(</span></span>
-<span>  data_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
+<span>  bbox <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
 <span>  specs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span>main <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span></span>
@@ -103,7 +103,7 @@
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Detail Region"</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="fu"><a href="reference/config_insetmap.html">config_insetmap</a></span><span class="op">(</span></span>
-<span>  data_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
+<span>  bbox <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
 <span>  specs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span>main <span class="op">=</span> <span class="cn">TRUE</span>, plot <span class="op">=</span> <span class="va">main_plot</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span></span>
@@ -155,7 +155,11 @@
 <code><a href="reference/config_insetmap.html">config_insetmap()</a></code> — Build and store configuration
 <ul>
 <li>
-<code>data_list</code>: list of sf objects</li>
+<code>bbox</code>: overall bounding box (sf bbox or similar)</li>
+<li>
+<code>to_crs</code>: target Coordinate Reference System</li>
+<li>
+<code>from_crs</code>: source CRS for non-sf inputs</li>
 <li>
 <code>specs</code>: list of <code><a href="reference/inset_spec.html">inset_spec()</a></code>
 </li>
@@ -197,7 +201,7 @@
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/config_insetmap.html">config_insetmap</a></span><span class="op">(</span></span>
-<span>  data_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
+<span>  bbox <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
 <span>  specs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span>main <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span></span>
@@ -216,7 +220,7 @@
 </h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/config_insetmap.html">config_insetmap</a></span><span class="op">(</span></span>
-<span>  data_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
+<span>  bbox <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
 <span>  specs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span>main <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="reference/inset_spec.html">inset_spec</a></span><span class="op">(</span></span>
@@ -234,7 +238,6 @@
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/ggsave_inset.html">ggsave_inset</a></span><span class="op">(</span></span>
 <span>  <span class="st">"map_with_insets.png"</span>,</span>
-<span>  plot <span class="op">=</span> <span class="va">composed_plot</span>,</span>
 <span>  <span class="co"># `height` auto-calculated from `main_ratio`</span></span>
 <span>  width <span class="op">=</span> <span class="fl">12</span>,</span>
 <span>  dpi <span class="op">=</span> <span class="fl">300</span></span>

@@ -74,4 +74,5 @@ config_insetmap(
         )
     )
 )
+#> Error in config_insetmap(data_list = list(nc), specs = list(inset_spec(main = TRUE),     inset_spec(xmin = -84, xmax = -75, ymin = 33, ymax = 37,         loc = "left bottom", scale_factor = 0.5))): unused argument (data_list = list(nc))
 ```

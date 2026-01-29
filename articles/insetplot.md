@@ -8,7 +8,7 @@ insetplot, with emphasis on runnable code.
 ``` r
 # 1) Configure the layout: one main map + one inset (nc loaded in setup)
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -53,7 +53,7 @@ main <- ggplot(nc, aes(fill = AREA)) +
     theme_void()
 
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE, plot = main),
         inset_spec(
@@ -158,7 +158,7 @@ Now let’s see how `insetplot` handles this more gracefully.
 
 ``` r
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -246,12 +246,12 @@ arguments:
 
 ``` r
 cfg <- config_insetmap(
-    data_list = list(nc), # list of sf objects used to compute extents/CRS
+    bbox = st_bbox(nc), # global bbox used to compute extents/CRS
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(xmin = -84, xmax = -75, ymin = 33, ymax = 37, loc = "left bottom", scale_factor = 0.5)
     ),
-    crs = sf::st_crs("EPSG:4326"), # target CRS for coord_sf()
+    to_crs = sf::st_crs("EPSG:4326"), # target CRS for coord_sf()
     border_args = list(color = "black", linewidth = 1) # passed to map_border()
 )
 ```
@@ -259,12 +259,12 @@ cfg <- config_insetmap(
 [`config_insetmap()`](https://fncokg.github.io/insetplot/reference/config_insetmap.md)
 arguments:
 
-- `data_list`: list of sf objects; used to compute union bbox and main
-  aspect ratio.
+- `bbox`: overall bounding box (sf bbox or similar).
 - `specs`: list of `inset_spec` objects; exactly one must have
   `main = TRUE`.
-- `crs`: target CRS passed to
+- `to_crs`: target CRS passed to
   [`ggplot2::coord_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html).
+- `from_crs`: source CRS for non-sf inputs.
 - `border_args`: style for inset borders via
   [`map_border()`](https://fncokg.github.io/insetplot/reference/map_border.md).
 

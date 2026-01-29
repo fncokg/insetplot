@@ -109,6 +109,7 @@ config_insetmap(
         )
     )
 )
+#> Error in config_insetmap(data_list = list(nc), specs = list(inset_spec(main = TRUE),     inset_spec(xmin = -84, xmax = -75, ymin = 33, ymax = 37,         loc = "left bottom", width = 0.3))): unused argument (data_list = list(nc))
 
 base <- ggplot(nc, aes(fill = AREA)) +
     geom_sf() +
@@ -116,9 +117,10 @@ base <- ggplot(nc, aes(fill = AREA)) +
     guides(fill = "none") +
     theme_void()
 with_inset(base)
-
+#> Error: No inset configuration found. Please run config_insetmap() first.
 
 # Save with automatically calculated height
 
 ggsave_inset(paste0(tempdir(), "/inset_map.png"), width = 10)
+#> Error in check_numeric_scalar(height, "height"): height must be a numeric scalar
 ```
