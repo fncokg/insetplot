@@ -9,20 +9,16 @@ main plot, CRS settings, and border appearance for insets.
 
 ``` r
 config_insetmap(
-  data_list,
   specs,
-  crs = sf::st_crs("EPSG:4326"),
+  to_crs = sf::st_crs("EPSG:4326"),
+  from_crs = sf::st_crs("EPSG:4326"),
+  bbox = NULL,
+  lims_method = "cross",
   border_args = list()
 )
 ```
 
 ## Arguments
-
-- data_list:
-
-  A list of spatial data objects (sf class). These data are used to
-  compute the overall bounding box and coordinate systems for the
-  insets.
 
 - specs:
 
@@ -30,11 +26,30 @@ config_insetmap(
   [`inset_spec()`](https://fncokg.github.io/insetplot/reference/inset_spec.md)
   objects.
 
-- crs:
+- to_crs:
 
   Coordinate reference system to transform to, passed to
   [`ggplot2::coord_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html)
   as `crs`. Default `"EPSG:4326"`.
+
+- from_crs:
+
+  Coordinate reference system of bboxes in `specs`. Default
+  `"EPSG:4326"`.
+
+- bbox:
+
+  An optional bounding box (compatible with
+  [`sf::st_bbox()`](https://r-spatial.github.io/sf/reference/st_bbox.html))
+  to define the default extent for subplots that do not specify their
+  own coordinates. If NULL, subplots must specify their own valid
+  dimensions/coordinates.
+
+- lims_method:
+
+  Method to calculate limits from bbox. See also
+  [`ggplot2::coord_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html).
+  Default `"cross"`.
 
 - border_args:
 
@@ -65,7 +80,7 @@ library(sf)
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 config_insetmap(
-    data_list = list(nc),
+    bbox = sf::st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -74,5 +89,4 @@ config_insetmap(
         )
     )
 )
-#> Error in config_insetmap(data_list = list(nc), specs = list(inset_spec(main = TRUE),     inset_spec(xmin = -84, xmax = -75, ymin = 33, ymax = 37,         loc = "left bottom", scale_factor = 0.5))): unused argument (data_list = list(nc))
 ```

@@ -114,7 +114,7 @@ base <- ggplot(nc, aes(fill = AREA)) +
     guides(fill = "none") +
     theme_void()
 with_inset(base)
-#> Error: No inset configuration found. Please run config_insetmap() first.
+
 
 # Or supply custom plots in each inset_spec, then call with_inset() without plot
 config_insetmap(
@@ -130,5 +130,5 @@ config_insetmap(
 )
 #> Error in config_insetmap(data_list = list(nc), specs = list(inset_spec(main = TRUE,     plot = base), inset_spec(xmin = -82, xmax = -80.5, ymin = 35.5,     ymax = 36, loc = "left bottom", scale_factor = 2, plot = base))): unused argument (data_list = list(nc))
 with_inset() # plot parameter is optional now
-#> Error: No inset configuration found. Please run config_insetmap() first.
+#> Error in subplots[[.cfg$main_idx]] + inset_plots: non-numeric argument to binary operator
 ```
