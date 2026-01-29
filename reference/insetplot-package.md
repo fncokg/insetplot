@@ -48,7 +48,7 @@ composition automatically.
 
     # Approach 1: shared base plot for all subplots
     config_insetmap(
-      data_list = list(nc),
+      bbox = st_bbox(nc),
       specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -66,7 +66,7 @@ composition automatically.
 
     # Approach 2: provide custom plots in each spec
     config_insetmap(
-      data_list = list(nc),
+      bbox = st_bbox(nc),
       specs = list(
         inset_spec(main = TRUE, plot = base_map),
         inset_spec(

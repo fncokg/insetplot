@@ -96,7 +96,7 @@ library(ggplot2)
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -105,7 +105,6 @@ config_insetmap(
         )
     )
 )
-#> Error in config_insetmap(data_list = list(nc), specs = list(inset_spec(main = TRUE),     inset_spec(xmin = -82, xmax = -80.5, ymin = 35.5, ymax = 36,         loc = "left bottom", scale_factor = 2))): unused argument (data_list = list(nc))
 
 # Supply base plot for all subplots
 base <- ggplot(nc, aes(fill = AREA)) +
@@ -118,7 +117,7 @@ with_inset(base)
 
 # Or supply custom plots in each inset_spec, then call with_inset() without plot
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE, plot = base),
         inset_spec(
@@ -128,7 +127,6 @@ config_insetmap(
         )
     )
 )
-#> Error in config_insetmap(data_list = list(nc), specs = list(inset_spec(main = TRUE,     plot = base), inset_spec(xmin = -82, xmax = -80.5, ymin = 35.5,     ymax = 36, loc = "left bottom", scale_factor = 2, plot = base))): unused argument (data_list = list(nc))
 with_inset() # plot parameter is optional now
-#> Error in subplots[[.cfg$main_idx]] + inset_plots: non-numeric argument to binary operator
+
 ```

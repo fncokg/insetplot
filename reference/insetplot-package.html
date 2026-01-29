@@ -74,7 +74,7 @@ with optional <code>ratio_scale</code> for fine-tuning.</p></li>
 <span></span>
 <span><span class="co"># Approach 1: shared base plot for all subplots</span></span>
 <span><span class="fu"><a href="../reference/config_insetmap.html">config_insetmap</a></span><span class="op">(</span></span>
-<span>  data_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
+<span>  bbox <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
 <span>  specs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="../reference/inset_spec.html">inset_spec</a></span><span class="op">(</span>main <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="../reference/inset_spec.html">inset_spec</a></span><span class="op">(</span></span>
@@ -92,7 +92,7 @@ with optional <code>ratio_scale</code> for fine-tuning.</p></li>
 <span></span>
 <span><span class="co"># Approach 2: provide custom plots in each spec</span></span>
 <span><span class="fu"><a href="../reference/config_insetmap.html">config_insetmap</a></span><span class="op">(</span></span>
-<span>  data_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
+<span>  bbox <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_bbox.html" class="external-link">st_bbox</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span>,</span>
 <span>  specs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="../reference/inset_spec.html">inset_spec</a></span><span class="op">(</span>main <span class="op">=</span> <span class="cn">TRUE</span>, plot <span class="op">=</span> <span class="va">base_map</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="../reference/inset_spec.html">inset_spec</a></span><span class="op">(</span></span>

@@ -100,7 +100,7 @@ library(ggplot2)
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
@@ -109,7 +109,6 @@ config_insetmap(
         )
     )
 )
-#> Error in config_insetmap(data_list = list(nc), specs = list(inset_spec(main = TRUE),     inset_spec(xmin = -84, xmax = -75, ymin = 33, ymax = 37,         loc = "left bottom", width = 0.3))): unused argument (data_list = list(nc))
 
 base <- ggplot(nc, aes(fill = AREA)) +
     geom_sf() +
