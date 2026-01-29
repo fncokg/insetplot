@@ -64,7 +64,7 @@ library(ggplot2)
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 config_insetmap(
-    data_list = list(nc),
+    bbox = st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(

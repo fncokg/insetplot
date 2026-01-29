@@ -62,7 +62,7 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #' nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 #'
 #' config_insetmap(
-#'     data_list = list(nc),
+#'     bbox = st_bbox(nc),
 #'     specs = list(
 #'         inset_spec(main = TRUE),
 #'         inset_spec(
@@ -82,7 +82,7 @@ map_border <- function(color = "black", linewidth = 1, fill = "white", ...) {
 #'
 #' # Or supply custom plots in each inset_spec, then call with_inset() without plot
 #' config_insetmap(
-#'     data_list = list(nc),
+#'     bbox = st_bbox(nc),
 #'     specs = list(
 #'         inset_spec(main = TRUE, plot = base),
 #'         inset_spec(
@@ -270,7 +270,7 @@ with_inset <- function(plot = NULL, .cfg = last_insetcfg(), .as_is = FALSE, .ret
 #' nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 #'
 #' config_insetmap(
-#'     data_list = list(nc),
+#'     bbox = st_bbox(nc),
 #'     specs = list(
 #'         inset_spec(main = TRUE),
 #'         inset_spec(
