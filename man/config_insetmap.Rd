@@ -5,20 +5,27 @@
 \title{Configure inset map settings}
 \usage{
 config_insetmap(
-  data_list,
   specs,
-  crs = sf::st_crs("EPSG:4326"),
+  to_crs = sf::st_crs("EPSG:4326"),
+  from_crs = sf::st_crs("EPSG:4326"),
+  bbox = NULL,
+  lims_method = "cross",
   border_args = list()
 )
 }
 \arguments{
-\item{data_list}{A list of spatial data objects (sf class). These data are used to compute the overall
-bounding box and coordinate systems for the insets.}
-
 \item{specs}{A non-empty list of \code{\link[=inset_spec]{inset_spec()}} objects.}
 
-\item{crs}{Coordinate reference system to transform to, passed to
+\item{to_crs}{Coordinate reference system to transform to, passed to
 \code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}} as \code{crs}. Default \code{"EPSG:4326"}.}
+
+\item{from_crs}{Coordinate reference system of bboxes in \code{specs}. Default \code{"EPSG:4326"}.}
+
+\item{bbox}{An optional bounding box (compatible with \code{\link[sf:st_bbox]{sf::st_bbox()}}) to define
+the default extent for subplots that do not specify their own coordinates.
+If NULL, subplots must specify their own valid dimensions/coordinates.}
+
+\item{lims_method}{Method to calculate limits from bbox. See also \code{\link[ggplot2:ggsf]{ggplot2::coord_sf()}}. Default \code{"cross"}.}
 
 \item{border_args}{A list of named arguments passed to \code{\link[=map_border]{map_border()}} to style the
 borders around inset plots. See \code{\link[=map_border]{map_border()}} for details
@@ -38,7 +45,7 @@ library(sf)
 nc <- sf::st_read(system.file("shape/nc.shp", package = "sf"), quiet = TRUE)
 
 config_insetmap(
-    data_list = list(nc),
+    bbox = sf::st_bbox(nc),
     specs = list(
         inset_spec(main = TRUE),
         inset_spec(
