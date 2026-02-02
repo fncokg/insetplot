@@ -133,7 +133,7 @@
 <p>Full documentation and more examples are available at <a href="https://fncokg.github.io/insetplot/">insetplot package site</a>.</p>
 </div>
 <div class="section level2">
-<h2 id="core-functions">Core functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
+<h2 id="fast-overview-of-main-functions">Fast overview of main functions<a class="anchor" aria-label="anchor" href="#fast-overview-of-main-functions"></a>
 </h2>
 <ul>
 <li>
@@ -155,25 +155,24 @@
 <code><a href="reference/config_insetmap.html">config_insetmap()</a></code> — Build and store configuration
 <ul>
 <li>
-<code>bbox</code>: overall bounding box (sf bbox or similar)</li>
-<li>
-<code>to_crs</code>: target Coordinate Reference System</li>
-<li>
-<code>from_crs</code>: source CRS for non-sf inputs</li>
-<li>
-<code>specs</code>: list of <code><a href="reference/inset_spec.html">inset_spec()</a></code>
+<code>specs</code>: list of <code><a href="reference/inset_spec.html">inset_spec()</a></code>, <strong>required</strong>
 </li>
 <li>
-<code>crs</code>: target CRS (passed to coord_sf as <code>crs</code>)</li>
+<code>bbox</code>: overall bounding box (sf bbox or similar), <em>optional</em> (all specs must have fullly defined bboxes if omitted)</li>
 <li>
-<code>border_args</code>: forwarded to <code><a href="reference/map_border.html">map_border()</a></code> for inset borders</li>
+<code>to_crs</code>: target Coordinate Reference System, <em>optional</em>, by default “EPSG:4326”</li>
+<li>
+<code>from_crs</code>: source CRS for non-sf inputs, <em>optional</em>, by default “EPSG:4326”</li>
+<li>
+<code>border_args</code>: forwarded to <code><a href="reference/map_border.html">map_border()</a></code> for inset borders, <em>optional</em>
+</li>
 </ul>
 </li>
 <li>
 <code><a href="reference/with_inset.html">with_inset()</a></code> — Compose main plot with insets
 <ul>
 <li>
-<code>plot</code>: single ggplot or list per spec (optional)</li>
+<code>plot</code>: single ggplot or list per spec</li>
 <li>
 <code>.as_is</code>: return the input plot as-is (skip inset composition)</li>
 <li>
