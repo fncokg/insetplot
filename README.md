@@ -87,7 +87,7 @@ devtools::install_github("fncokg/insetplot")
 
 Full documentation and more examples are available at [insetplot package site](https://fncokg.github.io/insetplot/).
 
-## Core functions
+## Fast overview of main functions
 
 - `inset_spec()` — Define bbox, position, and size for each subplot
   - bbox: `xmin, xmax, ymin, ymax`
@@ -97,15 +97,14 @@ Full documentation and more examples are available at [insetplot package site](h
   - `main`: exactly one spec must set `main = TRUE`
 
 - `config_insetmap()` — Build and store configuration
-  - `bbox`: overall bounding box (sf bbox or similar)
-  - `to_crs`: target Coordinate Reference System
-  - `from_crs`: source CRS for non-sf inputs
-  - `specs`: list of `inset_spec()`
-  - `crs`: target CRS (passed to coord_sf as `crs`)
-  - `border_args`: forwarded to `map_border()` for inset borders
+  - `specs`: list of `inset_spec()`, **required**
+  - `bbox`: overall bounding box (sf bbox or similar), *optional* (all specs must have fullly defined bboxes if omitted)
+  - `to_crs`: target Coordinate Reference System, *optional*, by default "EPSG:4326"
+  - `from_crs`: source CRS for non-sf inputs, *optional*, by default "EPSG:4326"
+  - `border_args`: forwarded to `map_border()` for inset borders, *optional*
 
 - `with_inset()` — Compose main plot with insets
-  - `plot`: single ggplot or list per spec (optional)
+  - `plot`: single ggplot or list per spec
   - `.as_is`: return the input plot as-is (skip inset composition)
   - `.return_details`: return `list(full, subplots, subplot_layouts, main_ratio)`
 

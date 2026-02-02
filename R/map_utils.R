@@ -16,10 +16,7 @@
     xlim <- c(bbox[["xmin"]], bbox[["xmax"]])
     ylim <- c(bbox[["ymin"]], bbox[["ymax"]])
     if (!all(is.finite(c(xlim, ylim))) && method != "geometry_bbox") {
-        cli::cli_abort(c(
-            "Scale limits cannot be mapped onto spatial coordinates in {.fn coord_sf}.",
-            "i" = "Consider setting {.code lims_method = \"geometry_bbox\"} or {.code default_crs = NULL}."
-        ))
+        stop("Cannot calculate limits bbox with non-finite values unless method is 'geometry_bbox'")
     }
 
     bbox <- switch(method,
